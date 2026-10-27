@@ -1,0 +1,78 @@
+---
+interface Props {
+	title: string;
+	description: string;
+}
+
+const { title, description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonical} />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonical} />
+		<meta name="color-scheme" content="dark light" />
+	</head>
+	<body>
+		<slot />
+	</body>
+</html>
+
+<style is:global>
+	:root {
+		--bg: #191a1b;
+		--surface: #121314;
+		--border: #2e3234;
+		--text: #d4d4d4;
+		--heading: #e8e8e8;
+		--muted: #8a8f94;
+		--link: #4fa3cc;
+		--link-hover: #297aa0;
+	}
+	@media (prefers-color-scheme: light) {
+		:root {
+			--bg: #fafafa;
+			--surface: #ffffff;
+			--border: #dfe1e3;
+			--text: #2b2f33;
+			--heading: #111315;
+			--muted: #5f656b;
+			--link: #1f6f99;
+			--link-hover: #165273;
+		}
+	}
+	* {
+		margin: 0;
+		padding: 0;
+		box-sizing: border-box;
+	}
+	body {
+		background: var(--bg);
+		color: var(--text);
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		line-height: 1.55;
+	}
+	a {
+		color: var(--link);
+		text-decoration: none;
+	}
+	a:hover {
+		color: var(--link-hover);
+		text-decoration: underline;
+	}
+	a:focus-visible {
+		outline: 2px solid var(--link);
+		outline-offset: 2px;
+		border-radius: 2px;
+	}
+</style>
