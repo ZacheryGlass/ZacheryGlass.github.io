@@ -1,15 +1,9 @@
 ---
 title: What's in my .claude
 description: The README of my Claude Code configuration lists what's in it. This is why each piece is there.
-date: 2026-10-27
-draft: true
+date: 2026-10-28
+draft: false
 ---
-
-<!--
-Publish only after ~/.claude master is pushed. This post describes the fixed emoji hook, the
-run-goals skill and the .cmd hook wrapper, which are in local commits not yet on GitHub.
-Then set the date to the publish day and draft to false.
--->
 
 My [.claude repository](https://github.com/ZacheryGlass/.claude) is the configuration I run Claude Code with: settings, hooks, sub-agents, skills, slash commands and a status line. Its README lists what is in it. This post is about why each piece is there, so you can decide which ones to take.
 
