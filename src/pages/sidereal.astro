@@ -1,0 +1,414 @@
+---
+// Sidereal's page. The text follows the README in github.com/ZacheryGlass/sidereal, and the images load from there,
+// so new screenshots show up here without a change. If GitHub Pages is turned on for that repository, its site
+// takes over this /sidereal/ path.
+import Base from '../layouts/Base.astro';
+import { latestRelease } from '../data/github';
+import { formatDate, person } from '../data/site';
+
+const name = 'Sidereal: Git Graph, Log & Worktrees';
+const description =
+	'Free Git graph, log and file history with worktrees and submodules. No account, no ads, no telemetry. TortoiseGit-style and actively maintained.';
+const repo = 'https://github.com/ZacheryGlass/sidereal';
+const media = 'https://raw.githubusercontent.com/ZacheryGlass/sidereal/main/media';
+const marketplace = 'https://marketplace.visualstudio.com/items?itemName=zglass.sidereal';
+const release = await latestRelease('ZacheryGlass/sidereal');
+
+const structuredData = {
+	'@context': 'https://schema.org',
+	'@type': 'SoftwareApplication',
+	name,
+	description,
+	applicationCategory: 'DeveloperApplication',
+	url: new URL(Astro.url.pathname, Astro.site).href,
+	downloadUrl: marketplace,
+	screenshot: `${media}/graph-dark.png`,
+	offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+	author: person,
+	...(release && { softwareVersion: release.tag.replace(/^v/, ''), dateModified: release.date.toISOString().slice(0, 10) }),
+};
+
+const screenshots = [
+	{
+		file: 'commit-details.png',
+		caption: "A commit's details and one of its files' diff.",
+		alt: 'Commit details below the graph, with a diff open beside it',
+	},
+	{
+		file: 'worktrees.png',
+		caption: "Worktrees: other worktrees' branches are marked in the graph, and each opens in a new window or its own Sidereal tab.",
+		alt: "A worktree branch's menu in the graph, with the Worktrees group in the side bar",
+	},
+	{
+		file: 'submodule.png',
+		caption: "A submodule pointer change opens the submodule's history for exactly that range.",
+		alt: "A commit that updates a submodule, beside the submodule's history filtered to the new commits",
+	},
+	{
+		file: 'filters.png',
+		caption: 'Filters by path, author, message, date, revision range, SHA and refs.',
+		alt: 'The filter bar showing the commits that touched src/render/ since September',
+	},
+];
+---
+
+<Base
+	title={`${name} for VS Code`}
+	description={description}
+	structuredData={structuredData}
+	image={{
+		src: `${media}/graph-dark.png`,
+		width: 1600,
+		height: 1000,
+		alt: 'The Sidereal commit graph beside the References side bar, which lists branches, worktrees and submodules',
+	}}
+>
+	<main>
+		<header>
+			<p class="home"><a href="/">Zachery Glass</a></p>
+			<p class="kind">VS Code extension</p>
+			<h1>{name}</h1>
+			<p class="lead">
+				A free Git graph, log and file history for VS Code, modeled on TortoiseGit's log view, with worktrees and
+				submodules built in. No account, no ads, no telemetry.
+			</p>
+			<p class="actions">
+				<a class="button primary" href="vscode:extension/zglass.sidereal">Install in VS Code</a>
+				<a class="button" href={marketplace}>View on the Marketplace</a>
+			</p>
+			<p class="meta">
+				{release && <span>{release.tag} · released {formatDate(release.date)} · </span>}
+				<a href={`${repo}/blob/main/CHANGELOG.md`}>Changelog</a>{' · '}<a href={`${repo}/issues`}>Issues</a>{' · '}<a
+					href={`${repo}/discussions`}>Discussions</a
+				>
+			</p>
+		</header>
+
+		<figure class="hero">
+			<picture>
+				<source srcset={`${media}/graph-light.png`} media="(prefers-color-scheme: light)" />
+				<img
+					src={`${media}/graph-dark.png`}
+					width="1600"
+					height="1000"
+					alt="The commit graph beside the References side bar, which lists branches, worktrees and submodules"
+				/>
+			</picture>
+		</figure>
+
+		<section aria-labelledby="why">
+			<h2 id="why">Why Sidereal</h2>
+			<ul class="reasons">
+				<li><strong>Free.</strong> Every feature, for personal and business use. There is no paid tier.</li>
+				<li><strong>No account.</strong> Nothing to sign in to.</li>
+				<li>
+					<strong>No ads, no telemetry.</strong> Sidereal makes no network requests of its own: the only network traffic
+					comes from the Git commands you start, such as fetch, pull and push.
+				</li>
+				<li>
+					<strong>Maintained.</strong> Fixes and features ship regularly; the <a href={`${repo}/blob/main/CHANGELOG.md`}
+						>changelog</a
+					> lists every release.
+				</li>
+				<li>
+					<strong>Built for large histories.</strong> Commits stream in as <code>git log</code> runs and only the visible
+					rows are drawn. On a 100,000-commit repository the first 5,000 commits show in about a second (<a
+						href={`${repo}/blob/main/media/benchmark.json`}>benchmark</a
+					>).
+				</li>
+			</ul>
+		</section>
+
+		<section aria-labelledby="see-it">
+			<h2 id="see-it">See it</h2>
+			<figure class="shot">
+				<img
+					src={`${media}/hero.gif`}
+					width="1120"
+					height="700"
+					loading="lazy"
+					alt="Opening the graph, scrolling the history, and opening a commit's diff"
+				/>
+				<figcaption>Opening the graph, scrolling the history, and opening a commit's diff.</figcaption>
+			</figure>
+			<div class="shots">
+				{
+					screenshots.map((shot) => (
+						<figure class="shot">
+							<img src={`${media}/${shot.file}`} width="1600" height="1000" loading="lazy" alt={shot.alt} />
+							<figcaption>{shot.caption}</figcaption>
+						</figure>
+					))
+				}
+			</div>
+		</section>
+
+		<section aria-labelledby="features">
+			<h2 id="features">Features</h2>
+			<ul class="features">
+				<li>
+					<strong>Commit graph</strong> in an editor tab per repository, or in the bottom panel. Commits stream in as they
+					load, the header row stays in view while scrolling, and runs of commits can be collapsed.
+				</li>
+				<li>
+					<strong>Commit details</strong> beside or below the list: changed files, diffs, file history, blame, git notes
+					and <code>git describe</code>.
+				</li>
+				<li>
+					<strong>Git actions</strong> through VS Code's own prompts: checkout, branch, merge, rebase (including
+					interactive), cherry-pick, revert, reset, tag, stash, notes, push, pull and fetch. Patches can be generated and
+					applied; branches and tags have managers; the reflog is one menu away.
+				</li>
+				<li>
+					<strong>Filters</strong>: path, author, message, SHA, refs, date range and revision range, plus first-parent,
+					no-merges, follow-renames and a compressed graph. Jump between merges.
+				</li>
+				<li>
+					<strong>Worktrees</strong>: see which branches other worktrees have checked out, create a worktree from any
+					branch or commit, open it in a new window, the current window or its own Sidereal tab, and move uncommitted
+					changes between worktrees.
+				</li>
+				<li>
+					<strong>Submodules</strong> nested under their parent repository. A pointer change shows its commit range and
+					opens the submodule's history for it; out-of-date submodules have an inline <strong>Update</strong>.
+				</li>
+				<li>
+					<strong>Issue linking</strong>: rules in settings, or the bugtraq settings from a TortoiseGit
+					<code>.tgitconfig</code>, turn issue numbers in commit messages into links.
+				</li>
+				<li>Follows your color theme, and the repositories open in Source Control.</li>
+			</ul>
+		</section>
+
+		<section aria-labelledby="coming-from" class="columns">
+			<h2 id="coming-from">Coming from another tool</h2>
+			<div>
+				<h3>Git Graph</h3>
+				<ul>
+					<li>
+						Open the graph with <strong>Sidereal: Open Sidereal View</strong>, the Sidereal button in Source Control's
+						title bar, or the Sidereal icon in the activity bar.
+					</li>
+					<li>
+						The Repo and Branches dropdowns, the commit details view and the right-click menus work the way you expect;
+						filters live behind the funnel button.
+					</li>
+					<li>
+						Requests that stayed open in Git Graph's tracker are here: filtering by path, notes, patches and a pinned
+						header row.
+					</li>
+				</ul>
+			</div>
+			<div>
+				<h3>TortoiseGit</h3>
+				<ul>
+					<li>
+						The graph is TortoiseGit's Show Log: the same Graph, Actions, Message, Author and Date columns, the same
+						reference label colors, and the <strong>All Branches</strong>, <strong>Show Whole Project</strong>,
+						<strong>Walk Behavior</strong> and <strong>View</strong> controls below the list.
+					</li>
+					<li>
+						Your <code>.tgitconfig</code> bugtraq settings link issues in commit messages, once you allow them for the
+						repository.
+					</li>
+					<li>
+						Branch, merge, rebase, cherry-pick, revert, reset, stash, tag, patch and reflog actions are in the same
+						right-click menus.
+					</li>
+				</ul>
+			</div>
+		</section>
+
+		<section aria-labelledby="faq">
+			<h2 id="faq">Questions</h2>
+			<dl class="faq">
+				<dt>How do I see a Git graph in VS Code?</dt>
+				<dd>
+					Install Sidereal and run <strong>Sidereal: Open Sidereal View</strong> from the Command Palette, or click the
+					Sidereal icon in the activity bar.
+				</dd>
+				<dt>Does Sidereal need a GitKraken, GitHub or Microsoft account?</dt>
+				<dd>No. There is nothing to sign in to.</dd>
+				<dt>Does Sidereal collect telemetry?</dt>
+				<dd>No. It makes no network requests of its own.</dd>
+				<dt>Is Sidereal free for commercial use?</dt>
+				<dd>Yes. The license allows personal and internal business use at no cost.</dd>
+				<dt>Is Sidereal open source?</dt>
+				<dd>
+					No. The source is private; <a href={`${repo}/issues`}>issues</a> and <a href={`${repo}/discussions`}
+						>discussions</a
+					> are public.
+				</dd>
+				<dt>Which versions does Sidereal need?</dt>
+				<dd>VS Code 1.74 or later and Git 2.33 or later.</dd>
+			</dl>
+		</section>
+
+		<footer>
+			<p class="actions">
+				<a class="button primary" href="vscode:extension/zglass.sidereal">Install in VS Code</a>
+				<a class="button" href={marketplace}>View on the Marketplace</a>
+			</p>
+			<p class="meta">
+				Free for personal and internal business use. Made by <a href="/">Zachery Glass</a>.
+			</p>
+		</footer>
+	</main>
+</Base>
+
+<style>
+	main {
+		max-width: 56rem;
+		margin: 0 auto;
+		padding: 4rem 1.5rem 5rem;
+	}
+	.home {
+		font-size: 0.9375rem;
+	}
+	.kind {
+		margin-top: 2rem;
+		font-size: 0.8125rem;
+		color: var(--muted);
+	}
+	h1 {
+		margin-top: 0.25rem;
+		font-size: 2rem;
+		font-weight: 600;
+		line-height: 1.2;
+		color: var(--heading);
+		letter-spacing: -0.015em;
+	}
+	.lead {
+		margin-top: 0.75rem;
+		max-width: 42rem;
+		font-size: 1.125rem;
+	}
+	.actions {
+		margin-top: 1.5rem;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+	}
+	.button {
+		display: inline-block;
+		padding: 0.55rem 1rem;
+		font-size: 0.9375rem;
+		font-weight: 600;
+		border: 1px solid var(--border);
+		border-radius: 6px;
+		background: var(--surface);
+		color: var(--heading);
+	}
+	.button:hover {
+		text-decoration: none;
+		border-color: var(--link);
+		color: var(--heading);
+	}
+	.button.primary {
+		background: var(--link);
+		border-color: var(--link);
+		color: var(--bg);
+	}
+	.button.primary:hover {
+		background: var(--link-hover);
+		border-color: var(--link-hover);
+		color: var(--bg);
+	}
+	.meta {
+		margin-top: 1rem;
+		font-size: 0.875rem;
+		color: var(--muted);
+	}
+	figure img {
+		display: block;
+		width: 100%;
+		height: auto;
+		border: 1px solid var(--border);
+		border-radius: 8px;
+	}
+	.hero {
+		margin-top: 2.5rem;
+	}
+	section {
+		margin-top: 3.5rem;
+	}
+	h2 {
+		font-size: 0.8125rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--muted);
+	}
+	h3 {
+		font-size: 1.0625rem;
+		font-weight: 600;
+		color: var(--heading);
+	}
+	strong,
+	dt {
+		color: var(--heading);
+		font-weight: 600;
+	}
+	code {
+		font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+		font-size: 0.875em;
+		padding: 0.1em 0.35em;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 4px;
+	}
+	ul {
+		padding-left: 1.25rem;
+	}
+	li + li {
+		margin-top: 0.5rem;
+	}
+	.reasons,
+	.features {
+		margin-top: 1rem;
+		max-width: 44rem;
+	}
+	.shot {
+		margin-top: 1rem;
+	}
+	.shots {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+		gap: 1.5rem 1rem;
+		margin-top: 0.5rem;
+	}
+	figcaption {
+		margin-top: 0.5rem;
+		font-size: 0.875rem;
+		color: var(--muted);
+	}
+	.columns {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+		gap: 1rem 2rem;
+	}
+	.columns h2 {
+		grid-column: 1 / -1;
+	}
+	.columns ul {
+		margin-top: 0.5rem;
+	}
+	.faq {
+		margin-top: 1rem;
+		max-width: 44rem;
+	}
+	.faq dt + dd {
+		margin-top: 0.25rem;
+	}
+	.faq dd + dt {
+		margin-top: 1.25rem;
+	}
+	footer {
+		margin-top: 4rem;
+		padding-top: 2rem;
+		border-top: 1px solid var(--border);
+	}
+	footer .actions {
+		margin-top: 0;
+	}
+</style>

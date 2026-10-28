@@ -1,11 +1,26 @@
 ---
+import { bio } from '../data/site';
+
 interface Props {
 	title: string;
 	description: string;
+	type?: 'website' | 'article';
+	/** Share image; the site's card when omitted. */
+	image?: { src: string; width: number; height: number; alt: string };
+	/** Schema.org data for search engines, written as JSON-LD. */
+	structuredData?: Record<string, unknown>;
 }
 
-const { title, description } = Astro.props;
+const { title, description, type = 'website', structuredData } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const image = Astro.props.image ?? {
+	src: new URL('/og.png', Astro.site).href,
+	width: 1200,
+	height: 630,
+	alt: `Zachery Glass. ${bio}`,
+};
+// "<" is escaped so no string in the data can close the script element.
+const jsonLd = structuredData && JSON.stringify(structuredData).replace(/</g, '\\u003c');
 ---
 
 <!doctype html>
@@ -17,11 +32,19 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonical} />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta property="og:type" content="website" />
+		<link rel="alternate" type="application/rss+xml" title="Zachery Glass" href="/rss.xml" />
+		<meta property="og:type" content={type} />
+		<meta property="og:site_name" content="Zachery Glass" />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:url" content={canonical} />
+		<meta property="og:image" content={image.src} />
+		<meta property="og:image:width" content={String(image.width)} />
+		<meta property="og:image:height" content={String(image.height)} />
+		<meta property="og:image:alt" content={image.alt} />
+		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="color-scheme" content="dark light" />
+		{jsonLd && <script type="application/ld+json" set:html={jsonLd} />}
 	</head>
 	<body>
 		<slot />

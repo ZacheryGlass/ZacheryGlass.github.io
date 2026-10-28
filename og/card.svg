@@ -1,0 +1,13 @@
+<!-- Source of public/og.png, the share image. Rendered at 1200x630 with @resvg/resvg-js using system fonts. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+	<rect width="1200" height="630" fill="#191a1b"/>
+	<rect x="96" y="92" width="76" height="76" rx="14" fill="#121314" stroke="#2e3234" stroke-width="2"/>
+	<text x="134" y="142" text-anchor="middle" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="32" font-weight="600" fill="#4fa3cc">ZG</text>
+	<text x="96" y="268" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="76" font-weight="600" fill="#e8e8e8">Zachery Glass</text>
+	<text font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="38" fill="#d4d4d4">
+		<tspan x="96" y="346">I make developer tools, mostly around Git and</tspan>
+		<tspan x="96" y="398">AI coding agents: Sidereal, a Git graph for VS Code,</tspan>
+		<tspan x="96" y="450">and the Claude Code configuration I use every day.</tspan>
+	</text>
+	<text x="96" y="550" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="30" fill="#4fa3cc">zacheryglass.com</text>
+</svg>

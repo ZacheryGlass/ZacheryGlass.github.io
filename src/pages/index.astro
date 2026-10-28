@@ -1,15 +1,25 @@
 ---
 import Base from '../layouts/Base.astro';
+import ProjectCard from '../components/ProjectCard.astro';
 import { projects } from '../data/projects';
+import { statLine } from '../data/github';
+import { getPosts } from '../data/writing';
+import { bio, description, formatDate, person } from '../data/site';
 
-const description = 'Developer tools and other software Zachery Glass builds and maintains.';
+const featured = await Promise.all(
+	projects.filter((project) => project.featured).map(async (project) => ({ project, stat: await statLine(project) })),
+);
+const more = projects.filter((project) => !project.featured);
+
+const posts = await getPosts();
+const structuredData = { '@context': 'https://schema.org', ...person, description };
 ---
 
-<Base title="Zachery Glass" description={description}>
+<Base title="Zachery Glass" description={description} structuredData={structuredData}>
 	<main>
 		<header>
 			<h1>Zachery Glass</h1>
-			<p>Developer tools and other software I build and maintain.</p>
+			<p>{bio}</p>
 			<nav aria-label="Elsewhere">
 				<a href="https://github.com/ZacheryGlass">GitHub</a>
 			</nav>
@@ -17,23 +27,39 @@ const description = 'Developer tools and other software Zachery Glass builds and
 
 		<section aria-labelledby="projects">
 			<h2 id="projects">Projects</h2>
-			<ul class="projects">
-				{
-					projects.map((project) => (
-						<li class="project">
-							<p class="kind">{project.kind}</p>
-							<h3>{project.name}</h3>
-							<p class="description">{project.description}</p>
-							<p class="links">
-								{project.links.map((link) => (
-									<a href={link.href}>{link.label}</a>
-								))}
-							</p>
-						</li>
-					))
-				}
+			<ul class="featured">
+				{featured.map(({ project, stat }) => <ProjectCard project={project} stat={stat} featured />)}
+			</ul>
+			<p class="more" id="more-projects">More projects</p>
+			<ul class="projects" aria-labelledby="more-projects">
+				{more.map((project) => <ProjectCard project={project} />)}
 			</ul>
 		</section>
+
+		{
+			posts.length > 0 && (
+				<section aria-labelledby="writing">
+					<h2 id="writing">Writing</h2>
+					<ul class="posts">
+						{posts.map((post) => (
+							<li class="post">
+								<p class="date">
+									<time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+									{post.data.draft && ' · Draft'}
+								</p>
+								<h3>
+									<a href={`/writing/${post.id}/`}>{post.data.title}</a>
+								</h3>
+								<p class="standfirst">{post.data.description}</p>
+							</li>
+						))}
+					</ul>
+					<p class="feed">
+						<a href="/rss.xml">RSS feed</a>
+					</p>
+				</section>
+			)
+		}
 	</main>
 </Base>
 
@@ -51,6 +77,7 @@ const description = 'Developer tools and other software Zachery Glass builds and
 	}
 	header p {
 		margin-top: 0.5rem;
+		max-width: 40rem;
 		color: var(--muted);
 	}
 	header nav {
@@ -67,41 +94,50 @@ const description = 'Developer tools and other software Zachery Glass builds and
 		letter-spacing: 0.08em;
 		color: var(--muted);
 	}
-	.projects {
+	.featured,
+	.projects,
+	.posts {
 		list-style: none;
-		margin-top: 1rem;
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
 		gap: 1rem;
 	}
-	.project {
-		display: flex;
-		flex-direction: column;
-		padding: 1.25rem;
-		background: var(--surface);
-		border: 1px solid var(--border);
-		border-radius: 6px;
+	.featured {
+		margin-top: 1rem;
+		grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
 	}
-	.kind {
+	.more {
+		margin-top: 2rem;
+		font-size: 0.8125rem;
+		color: var(--muted);
+	}
+	.projects {
+		margin-top: 0.75rem;
+		grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+	}
+	.posts {
+		margin-top: 1rem;
+	}
+	.post .date {
 		font-size: 0.75rem;
 		color: var(--muted);
 	}
-	h3 {
+	.post h3 {
 		margin-top: 0.25rem;
 		font-size: 1.0625rem;
 		font-weight: 600;
+	}
+	.post h3 a {
 		color: var(--heading);
 	}
-	.description {
-		margin-top: 0.5rem;
-		font-size: 0.9375rem;
-		flex: 1;
+	.post h3 a:hover {
+		color: var(--link);
 	}
-	.links {
-		margin-top: 1rem;
-		display: flex;
-		flex-wrap: wrap;
-		gap: 1rem;
+	.standfirst {
+		margin-top: 0.25rem;
+		font-size: 0.9375rem;
+	}
+	.feed {
+		margin-top: 1.5rem;
 		font-size: 0.875rem;
 	}
 </style>

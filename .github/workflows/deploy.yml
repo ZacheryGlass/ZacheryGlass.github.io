@@ -4,6 +4,9 @@ name: Deploy
 on:
   push:
     branches: [main]
+  # Rebuild daily so the numbers on the project cards stay current.
+  schedule:
+    - cron: '23 6 * * *'
   workflow_dispatch:
 
 permissions:
@@ -21,6 +24,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: withastro/action@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   deploy:
     needs: build

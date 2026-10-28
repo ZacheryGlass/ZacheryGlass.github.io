@@ -6,6 +6,12 @@ export interface Project {
 	kind: string;
 	description: string;
 	links: { label: string; href: string }[];
+	/** Shown in the large cards above the rest. */
+	featured?: boolean;
+	/** GitHub repository (owner/name) whose numbers the card shows, read when the site is built. */
+	repo?: string;
+	/** Which numbers: stars and forks, or the latest release. */
+	stat?: 'stars' | 'release';
 }
 
 export const projects: Project[] = [
@@ -13,17 +19,25 @@ export const projects: Project[] = [
 		name: 'Sidereal',
 		kind: 'VS Code extension',
 		description:
-			'A free Git graph, log and file history for VS Code, with worktrees and submodules. No account, no ads, no telemetry.',
+			"A free Git graph, log and file history for VS Code, in the style of TortoiseGit's log view. Branches, tags, stashes, worktrees and submodules in one view, with checkout, merge, rebase and cherry-pick run from the graph. No account, no ads, no telemetry.",
 		links: [
+			{ label: 'Overview', href: '/sidereal/' },
 			{ label: 'Marketplace', href: 'https://marketplace.visualstudio.com/items?itemName=zglass.sidereal' },
 			{ label: 'GitHub', href: 'https://github.com/ZacheryGlass/sidereal' },
 		],
+		featured: true,
+		repo: 'ZacheryGlass/sidereal',
+		stat: 'release',
 	},
 	{
 		name: '.claude',
 		kind: 'Claude Code configuration',
-		description: "My personal configuration for Claude Code, Anthropic's command-line coding tool.",
+		description:
+			'The settings, hooks, sub-agents, skills and slash commands I run Claude Code with, plus a Go status line that keeps cache, context and git state in view. Clone it and keep what fits.',
 		links: [{ label: 'GitHub', href: 'https://github.com/ZacheryGlass/.claude' }],
+		featured: true,
+		repo: 'ZacheryGlass/.claude',
+		stat: 'stars',
 	},
 	{
 		name: 'agent-sync',
