@@ -79,7 +79,12 @@ export const projects: Project[] = [
 		name: 'BindKit',
 		kind: 'Windows app',
 		description: 'A system tray app that finds standalone Python scripts and runs them from a menu.',
-		links: [{ label: 'GitHub', href: 'https://github.com/ZacheryGlass/BindKit' }],
+		links: [
+			// The bare bindkit.com doesn't answer over HTTPS; www does.
+			{ label: 'bindkit.com', href: 'https://www.bindkit.com' },
+			{ label: 'GitHub', href: 'https://github.com/ZacheryGlass/BindKit' },
+		],
+		peel: { href: 'https://www.bindkit.com', background: '#0f172a' },
 	},
 	{
 		name: 'copilot-quota-tray',
