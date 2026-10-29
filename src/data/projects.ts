@@ -101,7 +101,7 @@ export function linkPeel(href: string): Peel | undefined {
 	// GitHub refuses to be framed, so the peel reveals a blurred, made-up page for the repository, and GitHub loads after.
 	const url = new URL(href);
 	if (url.hostname === 'github.com') {
-		return { href, background: 'light-dark(#ffffff, #0d1117)', standIn: `/peel/github/#${url.pathname.slice(1)}` };
+		return { href, background: '#ffffff', standIn: `/peel/github/#${url.pathname.slice(1)}` };
 	}
 	return undefined;
 }

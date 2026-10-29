@@ -1,7 +1,7 @@
 ---
 // A made-up GitHub repository page under a layer of blur, which PagePeel reveals in place of GitHub, since GitHub
 // refuses to be framed. The repository is named in the hash, as owner/name; a project's name and description fill
-// it in. It follows the visitor's light or dark setting, as GitHub does for anyone signed out.
+// it in. It is always light, whatever the visitor's setting.
 import { projects } from '../../data/projects';
 import { bio } from '../../data/site';
 
@@ -31,7 +31,7 @@ const topics = ['developer-tools', 'git', 'open-source', 'productivity', 'typesc
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="robots" content="noindex" />
-		<meta name="color-scheme" content="light dark" />
+		<meta name="color-scheme" content="light" />
 		<title>GitHub</title>
 	</head>
 	<body>
@@ -150,23 +150,6 @@ const topics = ['developer-tools', 'git', 'open-source', 'productivity', 'typesc
 		--folder: #54aeff;
 		--underline: #fd8c73;
 		--avatar: #c9ad93;
-	}
-	@media (prefers-color-scheme: dark) {
-		:root {
-			--header: #010409;
-			--bg: #0d1117;
-			--bg-muted: #151b23;
-			--border: #3d444d;
-			--fg: #f0f6fc;
-			--fg-muted: #9198a1;
-			--accent: #4493f8;
-			--topic: #172b45;
-			--green: #238636;
-			--success: #3fb950;
-			--folder: #9198a1;
-			--underline: #f78166;
-			--avatar: #8a7462;
-		}
 	}
 	* {
 		margin: 0;
