@@ -85,15 +85,17 @@ const screenshots = [
 		</header>
 
 		<figure class="hero">
-			<picture>
-				<source srcset={`${media}/graph-light.png`} media="(prefers-color-scheme: light)" />
-				<img
-					src={`${media}/graph-dark.png`}
-					width="1600"
-					height="1000"
-					alt="The commit graph beside the References side bar, which lists branches, worktrees and submodules"
-				/>
-			</picture>
+			<button class="zoom" type="button">
+				<picture>
+					<source srcset={`${media}/graph-light.png`} media="(prefers-color-scheme: light)" />
+					<img
+						src={`${media}/graph-dark.png`}
+						width="1600"
+						height="1000"
+						alt="The commit graph beside the References side bar, which lists branches, worktrees and submodules"
+					/>
+				</picture>
+			</button>
 		</figure>
 
 		<section aria-labelledby="why">
@@ -122,20 +124,24 @@ const screenshots = [
 		<section aria-labelledby="see-it">
 			<h2 id="see-it">See it</h2>
 			<figure class="shot">
-				<img
-					src={`${media}/hero.gif`}
-					width="1120"
-					height="700"
-					loading="lazy"
-					alt="Opening the graph, scrolling the history, and opening a commit's diff"
-				/>
+				<button class="zoom" type="button">
+					<img
+						src={`${media}/hero.gif`}
+						width="1120"
+						height="700"
+						loading="lazy"
+						alt="Opening the graph, scrolling the history, and opening a commit's diff"
+					/>
+				</button>
 				<figcaption>Opening the graph, scrolling the history, and opening a commit's diff.</figcaption>
 			</figure>
 			<div class="shots">
 				{
 					screenshots.map((shot) => (
 						<figure class="shot">
-							<img src={`${media}/${shot.file}`} width="1600" height="1000" loading="lazy" alt={shot.alt} />
+							<button class="zoom" type="button">
+								<img src={`${media}/${shot.file}`} width="1600" height="1000" loading="lazy" alt={shot.alt} />
+							</button>
 							<figcaption>{shot.caption}</figcaption>
 						</figure>
 					))
@@ -254,7 +260,53 @@ const screenshots = [
 			</p>
 		</footer>
 	</main>
+	<div class="zoom-overlay"></div>
 </Base>
+
+<script>
+	// Clicking an image enlarges it to fill most of the window. The next click anywhere, Escape, or scrolling puts it
+	// back where it was.
+	const overlay = document.querySelector<HTMLElement>('.zoom-overlay')!;
+	let zoomed: HTMLImageElement | undefined;
+
+	function open(button: HTMLElement) {
+		const image = button.querySelector('img')!;
+		// The button isn't moved, so it keeps the image's place on the page.
+		const box = button.getBoundingClientRect();
+		const width = document.documentElement.clientWidth;
+		const height = innerHeight;
+		const scale = Math.min((width * 0.94) / box.width, (height * 0.9) / box.height);
+		const x = width / 2 - (box.left + box.width / 2);
+		const y = height / 2 - (box.top + box.height / 2);
+		zoomed = image;
+		image.classList.add('zoomed');
+		image.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+		overlay.classList.add('open');
+	}
+
+	function close() {
+		if (!zoomed) return;
+		zoomed.classList.remove('zoomed');
+		zoomed.style.transform = '';
+		zoomed = undefined;
+		overlay.classList.remove('open');
+	}
+
+	document.addEventListener('click', (event) => {
+		if (zoomed) {
+			event.preventDefault();
+			close();
+			return;
+		}
+		const button = event.target instanceof Element ? event.target.closest<HTMLElement>('.zoom') : null;
+		if (button) open(button);
+	});
+	document.addEventListener('keydown', (event) => {
+		if (event.key === 'Escape') close();
+	});
+	addEventListener('scroll', close, { passive: true });
+	addEventListener('resize', close);
+</script>
 
 <style>
 	main {
@@ -329,6 +381,57 @@ const screenshots = [
 	}
 	.hero {
 		margin-top: 2.5rem;
+	}
+	.zoom {
+		display: block;
+		width: 100%;
+		border: 0;
+		background: none;
+		border-radius: 8px;
+		cursor: zoom-in;
+	}
+	.zoom:focus-visible {
+		outline: 2px solid var(--link);
+		outline-offset: 2px;
+	}
+	.zoom picture {
+		display: block;
+	}
+	/* Stays above the page until it's back in place. */
+	.zoom img {
+		position: relative;
+		z-index: 0;
+		transition:
+			transform 0.35s cubic-bezier(0.2, 0, 0, 1),
+			z-index 0s 0.35s;
+	}
+	.zoom img.zoomed {
+		z-index: 11;
+		cursor: zoom-out;
+		transition:
+			transform 0.35s cubic-bezier(0.2, 0, 0, 1),
+			z-index 0s;
+	}
+	.zoom-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 10;
+		background: color-mix(in srgb, var(--bg) 88%, transparent);
+		cursor: zoom-out;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.35s;
+	}
+	.zoom-overlay.open {
+		opacity: 1;
+		pointer-events: auto;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.zoom img,
+		.zoom img.zoomed,
+		.zoom-overlay {
+			transition: none;
+		}
 	}
 	section {
 		margin-top: 3.5rem;
