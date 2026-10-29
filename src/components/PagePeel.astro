@@ -21,6 +21,8 @@
 		frame?.remove();
 		frame = document.createElement('iframe');
 		frame.className = 'peel-frame';
+		// Lets the site run as usual but not navigate this window. Set before src, which is when it takes effect.
+		frame.sandbox.add('allow-scripts', 'allow-same-origin');
 		frame.src = link.href;
 		frame.title = link.textContent?.trim() ?? '';
 		frame.tabIndex = -1;
