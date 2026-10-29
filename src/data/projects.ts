@@ -5,7 +5,7 @@ export interface Peel {
 	href: string;
 	/** The page's color, shown while it loads. */
 	background: string;
-	/** False for a page that refuses to be framed: the peel reveals smoke instead, and the page loads after. */
+	/** False for a page that refuses to be framed: the peel reveals a glow instead, and the page loads after. */
 	frame?: boolean;
 }
 
@@ -100,9 +100,9 @@ export function cardPeel(project: Project): Peel | undefined {
 	if (project.peel) return project.peel;
 	const { href } = project.links[0];
 	if (href.startsWith('/')) return { href, background: 'var(--bg)' };
-	// GitHub refuses to be framed, and its theme can't be read from here, so the card reveals black and white smoke,
+	// GitHub refuses to be framed, and its theme can't be read from here, so the card reveals a black and white glow,
 	// which suits either theme, and GitHub loads after.
-	if (new URL(href).hostname === 'github.com') return { href, background: '#ffffff', frame: false };
+	if (new URL(href).hostname === 'github.com') return { href, background: '#000000', frame: false };
 	return undefined;
 }
 
