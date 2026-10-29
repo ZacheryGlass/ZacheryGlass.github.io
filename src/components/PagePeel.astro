@@ -1,7 +1,8 @@
 ---
 // Following a link marked data-peel curls this page away from the bottom-right corner, revealing the linked site,
 // then navigates there. Browsers don't animate between two sites, so the site is loaded into a full-window frame
-// when the pointer reaches the link and stands in for the real page until the navigation lands.
+// when the pointer reaches the link and stands in for the real page until the navigation lands. A site that refuses
+// to be framed is marked data-peel-frame="false", and the peel reveals just its page color.
 ---
 
 <script>
@@ -10,22 +11,29 @@
 
 	type Point = [number, number];
 
-	let frame: HTMLIFrameElement | undefined;
+	let frame: HTMLElement | undefined;
+	let framed: string | undefined;
 	let overlay: SVGSVGElement | undefined;
 
 	const peelLink = (target: EventTarget | null) =>
 		target instanceof Element ? target.closest<HTMLAnchorElement>('a[data-peel]') : null;
 
 	function prepare(link: HTMLAnchorElement) {
-		if (frame?.src === link.href) return frame;
+		if (frame && framed === link.href) return frame;
 		frame?.remove();
-		frame = document.createElement('iframe');
+		framed = link.href;
+		if (link.dataset.peelFrame === 'false') {
+			frame = document.createElement('div');
+		} else {
+			const site = document.createElement('iframe');
+			// Lets the site run as usual but not navigate this window. Set before src, which is when it takes effect.
+			site.sandbox.add('allow-scripts', 'allow-same-origin');
+			site.src = link.href;
+			site.title = link.textContent?.trim() ?? '';
+			site.tabIndex = -1;
+			frame = site;
+		}
 		frame.className = 'peel-frame';
-		// Lets the site run as usual but not navigate this window. Set before src, which is when it takes effect.
-		frame.sandbox.add('allow-scripts', 'allow-same-origin');
-		frame.src = link.href;
-		frame.title = link.textContent?.trim() ?? '';
-		frame.tabIndex = -1;
 		frame.setAttribute('aria-hidden', 'true');
 		frame.style.background = link.dataset.peel ?? '';
 		document.body.append(frame);
@@ -163,5 +171,39 @@
 		position: fixed;
 		inset: 0;
 		z-index: 2147483647;
+	}
+	/* A curled corner on a card that peels, hinting at the peel that follows a click. The card is positioned. */
+	.peel-card {
+		overflow: hidden;
+	}
+	.peel-card::before {
+		content: '';
+		position: absolute;
+		right: 0;
+		bottom: 0;
+		width: 0;
+		height: 0;
+		background: linear-gradient(
+			to top left,
+			var(--bg) 50%,
+			var(--peel-crease) 50%,
+			var(--peel-light) 56%,
+			var(--peel-paper) 75%,
+			var(--peel-tip)
+		);
+		box-shadow: -2px -2px 8px rgb(14 18 32 / 0.18);
+		border-top-left-radius: 4px;
+		transition:
+			width 0.25s ease-out,
+			height 0.25s ease-out;
+	}
+	.peel-card:hover::before {
+		width: 3.5rem;
+		height: 3.5rem;
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.peel-card::before {
+			transition: none;
+		}
 	}
 </style>

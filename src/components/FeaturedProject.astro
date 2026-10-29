@@ -1,7 +1,7 @@
 ---
 import ChainSupply from './ChainSupply.astro';
 import GitGraph from './GitGraph.astro';
-import type { Project } from '../data/projects';
+import { cardPeel, peelAttrs, type Project } from '../data/projects';
 import type { Counts, Release } from '../data/github';
 import { formatDate } from '../data/site';
 
@@ -16,19 +16,19 @@ const { project, release, counts } = Astro.props;
 const hero = project.featured === 'hero';
 const arts = { 'git-graph': GitGraph, 'chain-supply': ChainSupply };
 const Art = project.art && arts[project.art];
-const peel = project.peel;
+const peel = cardPeel(project);
 // The whole card links to the page it peels to, or, below the hero, to the main link.
 const cardHref = peel?.href ?? (hero ? undefined : project.links[0].href);
-const peelAttr = (href: string) => (peel && href === peel.href ? peel.background : undefined);
+const peelAttr = (href: string) => (peel && href === peel.href ? peelAttrs(peel) : {});
 ---
 
-<li class:list={['featured', { hero, 'has-art': Art, peel: Boolean(peel) }]}>
+<li class:list={['featured', { hero, 'has-art': Art, 'peel-card': Boolean(peel) }]}>
 	<div class="text">
 		<p class="kind">{project.kind}</p>
 		<h2>
 			{
 				cardHref ? (
-					<a href={cardHref} data-peel={peelAttr(cardHref)}>
+					<a href={cardHref} {...peelAttr(cardHref)}>
 						{project.name}
 					</a>
 				) : (
@@ -41,7 +41,7 @@ const peelAttr = (href: string) => (peel && href === peel.href ? peel.background
 		<p class="links">
 			{
 				project.links.map((link, i) => (
-					<a class:list={{ button: hero && i === 0 }} href={link.href} data-peel={peelAttr(link.href)}>
+					<a class:list={{ button: hero && i === 0 }} href={link.href} {...peelAttr(link.href)}>
 						{link.label}
 					</a>
 				))
@@ -110,40 +110,6 @@ const peelAttr = (href: string) => (peel && href === peel.href ? peel.background
 	.featured .links {
 		position: relative;
 		z-index: 1;
-	}
-	/* A curled corner on hover, hinting at the peel that follows a click. */
-	.peel {
-		overflow: hidden;
-	}
-	.peel::before {
-		content: '';
-		position: absolute;
-		right: 0;
-		bottom: 0;
-		width: 0;
-		height: 0;
-		background: linear-gradient(
-			to top left,
-			var(--bg) 50%,
-			var(--peel-crease) 50%,
-			var(--peel-light) 56%,
-			var(--peel-paper) 75%,
-			var(--peel-tip)
-		);
-		box-shadow: -2px -2px 8px rgb(14 18 32 / 0.18);
-		border-top-left-radius: 4px;
-		transition:
-			width 0.25s ease-out,
-			height 0.25s ease-out;
-	}
-	.peel:hover::before {
-		width: 3.5rem;
-		height: 3.5rem;
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.peel::before {
-			transition: none;
-		}
 	}
 	.hero {
 		background: var(--hero-bg);

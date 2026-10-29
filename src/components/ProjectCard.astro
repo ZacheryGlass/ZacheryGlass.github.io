@@ -1,16 +1,17 @@
 ---
-import type { Project } from '../data/projects';
+import { cardPeel, peelAttrs, type Project } from '../data/projects';
 
 interface Props {
 	project: Project;
 }
 
 const { project } = Astro.props;
+const peel = cardPeel(project);
 ---
 
-<li class="project">
+<li class:list={['project', { 'peel-card': Boolean(peel) }]}>
 	<p class="kind">{project.kind}</p>
-	<h3><a href={project.links[0].href}>{project.name}</a></h3>
+	<h3><a href={peel?.href ?? project.links[0].href} {...(peel ? peelAttrs(peel) : {})}>{project.name}</a></h3>
 	<p class="description">{project.description}</p>
 </li>
 
@@ -58,7 +59,8 @@ const { project } = Astro.props;
 	h3 a:focus-visible {
 		outline: none;
 	}
-	h3 a:focus-visible::after {
+	/* On the card, which clips what's inside it to draw the peel's curled corner. */
+	.project:has(h3 a:focus-visible) {
 		outline: 2px solid var(--link);
 		outline-offset: 2px;
 	}

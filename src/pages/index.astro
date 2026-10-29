@@ -49,13 +49,13 @@ const structuredData = { '@context': 'https://schema.org', ...person, descriptio
 					<h2 id="writing">Writing</h2>
 					<ul class="posts">
 						{posts.map((post) => (
-							<li class="post">
+							<li class="post peel-card">
 								<p class="date">
 									<time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
 									{post.data.draft && ' · Draft'}
 								</p>
 								<h3>
-									<a href={`/writing/${post.id}/`}>{post.data.title}</a>
+									<a href={`/writing/${post.id}/`} data-peel="var(--bg)">{post.data.title}</a>
 								</h3>
 								<p class="standfirst">{post.data.description}</p>
 							</li>
@@ -158,7 +158,8 @@ const structuredData = { '@context': 'https://schema.org', ...person, descriptio
 	.post h3 a:focus-visible {
 		outline: none;
 	}
-	.post h3 a:focus-visible::after {
+	/* On the card, which clips what's inside it to draw the peel's curled corner. */
+	.post:has(h3 a:focus-visible) {
 		outline: 2px solid var(--link);
 		outline-offset: 2px;
 	}

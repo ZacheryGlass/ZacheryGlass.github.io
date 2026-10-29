@@ -1,5 +1,14 @@
 // The projects on the home page, in the order shown. Add one by adding an entry.
 
+/** A link that peels this page away to reveal the page it goes to (see PagePeel). */
+export interface Peel {
+	href: string;
+	/** The page's color, shown while it loads. */
+	background: string;
+	/** False for a page that refuses to be framed: the peel reveals just its color, and the page loads after. */
+	frame?: boolean;
+}
+
 export interface Project {
 	name: string;
 	/** What kind of thing it is, shown above the name. */
@@ -12,10 +21,10 @@ export interface Project {
 	/** The drawing beside a large card's text. */
 	art?: 'git-graph' | 'chain-supply';
 	/**
-	 * Clicking the card, or a link to `href`, peels this page away to reveal that page. `background` is its page
-	 * color, shown while it loads. The page must allow being framed.
+	 * Clicking the card, or a link to `href`, peels this page away to reveal that page. Without this, a card whose
+	 * main link is on this site or GitHub peels to that.
 	 */
-	peel?: { href: string; background: string };
+	peel?: Peel;
 	/** GitHub repository (owner/name) whose numbers the card shows, read when the site is built. */
 	repo?: string;
 	/** Which numbers: stars and forks, or the latest release. */
@@ -85,3 +94,19 @@ export const projects: Project[] = [
 		links: [{ label: 'GitHub', href: 'https://github.com/ZacheryGlass/personal-context-builder' }],
 	},
 ];
+
+/** Where a project's card peels to, if anywhere. */
+export function cardPeel(project: Project): Peel | undefined {
+	if (project.peel) return project.peel;
+	const { href } = project.links[0];
+	if (href.startsWith('/')) return { href, background: 'var(--bg)' };
+	// GitHub refuses to be framed, so the card reveals a page in GitHub's color and GitHub loads after.
+	if (new URL(href).hostname === 'github.com') return { href, background: 'var(--peel-github)', frame: false };
+	return undefined;
+}
+
+/** The attributes PagePeel reads from a link that peels. */
+export const peelAttrs = (peel: Peel) => ({
+	'data-peel': peel.background,
+	'data-peel-frame': peel.frame === false ? 'false' : undefined,
+});
