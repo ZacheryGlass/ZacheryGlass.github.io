@@ -2,7 +2,8 @@
 // Following a link marked data-peel curls this page away from the bottom-right corner, revealing the linked site,
 // then navigates there. Browsers don't animate between two sites, so the site is loaded into a full-window frame
 // when the pointer reaches the link and stands in for the real page until the navigation lands. A site that refuses
-// to be framed is marked data-peel-frame="false", and the peel reveals just its page color.
+// to be framed is marked data-peel-frame="false", and the peel reveals black and white blotches drifting over its
+// page color instead.
 ---
 
 <script>
@@ -18,12 +19,31 @@
 	const peelLink = (target: EventTarget | null) =>
 		target instanceof Element ? target.closest<HTMLAnchorElement>('a[data-peel]') : null;
 
+	const random = (min: number, max: number) => min + Math.random() * (max - min);
+
+	/** White shapes drifting over each other, inverting what's beneath them, so the screen turns in black and white. */
+	function blotches() {
+		const field = document.createElement('div');
+		field.classList.add('peel-blotches');
+		for (let i = 0; i < 7; i++) {
+			const blotch = document.createElement('span');
+			blotch.style.setProperty('--size', `${random(30, 65)}vmax`);
+			blotch.style.setProperty('--from', `${random(-60, 60)}vw, ${random(-60, 60)}vh`);
+			blotch.style.setProperty('--to', `${random(-60, 60)}vw, ${random(-60, 60)}vh`);
+			blotch.style.animationDuration = `${random(3, 6)}s`;
+			// Already on the move when the peel reveals them.
+			blotch.style.animationDelay = `${-random(0, 6)}s`;
+			field.append(blotch);
+		}
+		return field;
+	}
+
 	function prepare(link: HTMLAnchorElement) {
 		if (frame && framed === link.href) return frame;
 		frame?.remove();
 		framed = link.href;
 		if (link.dataset.peelFrame === 'false') {
-			frame = document.createElement('div');
+			frame = blotches();
 		} else {
 			const site = document.createElement('iframe');
 			// Lets the site run as usual but not navigate this window. Set before src, which is when it takes effect.
@@ -33,7 +53,7 @@
 			site.tabIndex = -1;
 			frame = site;
 		}
-		frame.className = 'peel-frame';
+		frame.classList.add('peel-frame');
 		frame.setAttribute('aria-hidden', 'true');
 		frame.style.background = link.dataset.peel ?? '';
 		document.body.append(frame);
@@ -171,6 +191,32 @@
 		position: fixed;
 		inset: 0;
 		z-index: 2147483647;
+	}
+	/* Black and white suit the site the peel can't show, whichever of its themes it loads in. */
+	.peel-blotches {
+		overflow: hidden;
+		isolation: isolate;
+	}
+	.peel-blotches span {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: var(--size);
+		height: var(--size);
+		margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+		background: #fff;
+		mix-blend-mode: difference;
+		animation: peel-blotch ease-in-out infinite alternate;
+	}
+	@keyframes peel-blotch {
+		from {
+			transform: translate(var(--from)) rotate(0turn);
+			border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
+		}
+		to {
+			transform: translate(var(--to)) rotate(0.4turn);
+			border-radius: 63% 37% 38% 62% / 58% 63% 37% 42%;
+		}
 	}
 	/* A curled corner on a card that peels, hinting at the peel that follows a click. The card is positioned. */
 	.peel-card {
