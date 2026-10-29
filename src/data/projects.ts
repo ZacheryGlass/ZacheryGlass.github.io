@@ -100,8 +100,9 @@ export function cardPeel(project: Project): Peel | undefined {
 	if (project.peel) return project.peel;
 	const { href } = project.links[0];
 	if (href.startsWith('/')) return { href, background: 'var(--bg)' };
-	// GitHub refuses to be framed, so the card reveals a page in GitHub's color and GitHub loads after.
-	if (new URL(href).hostname === 'github.com') return { href, background: 'var(--peel-github)', frame: false };
+	// GitHub refuses to be framed, so the card reveals a white page and GitHub loads after. GitHub's own theme can't
+	// be read from here, and white matches its light one.
+	if (new URL(href).hostname === 'github.com') return { href, background: '#ffffff', frame: false };
 	return undefined;
 }
 
