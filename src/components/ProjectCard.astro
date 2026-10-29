@@ -11,7 +11,7 @@ const peel = cardPeel(project);
 
 <li class:list={['project', { 'peel-card': Boolean(peel) }]}>
 	<p class="kind">{project.kind}</p>
-	<h3><a href={peel?.href ?? project.links[0].href} {...(peel ? peelAttrs(peel) : {})}>{project.name}</a></h3>
+	<h3><a href={peel?.href ?? project.links[0].href} {...peelAttrs(peel)}>{project.name}</a></h3>
 	<p class="description">{project.description}</p>
 </li>
 

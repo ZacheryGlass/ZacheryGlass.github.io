@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 import FeaturedProject from '../components/FeaturedProject.astro';
 import PagePeel from '../components/PagePeel.astro';
 import ProjectCard from '../components/ProjectCard.astro';
-import { projects } from '../data/projects';
+import { linkPeel, peelAttrs, projects } from '../data/projects';
 import { latestRelease, repoCounts } from '../data/github';
 import { getPosts } from '../data/writing';
 import { description, formatDate, person } from '../data/site';
@@ -28,7 +28,7 @@ const structuredData = { '@context': 'https://schema.org', ...person, descriptio
 		<header>
 			<h1>Zachery Glass</h1>
 			<nav aria-label="Elsewhere">
-				<a href="https://github.com/ZacheryGlass">GitHub</a>
+				<a href="https://github.com/ZacheryGlass" {...peelAttrs(linkPeel('https://github.com/ZacheryGlass'))}>GitHub</a>
 			</nav>
 		</header>
 

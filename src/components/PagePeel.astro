@@ -2,7 +2,7 @@
 // Following a link marked data-peel curls this page away from the bottom-right corner, revealing the linked site,
 // then navigates there. Browsers don't animate between two sites, so the site is loaded into a full-window frame
 // when the pointer reaches the link and stands in for the real page until the navigation lands. A site that refuses
-// to be framed is marked data-peel-frame="false", and the peel reveals a pulsing black and white glow instead.
+// to be framed is given a picture to reveal in its place, in data-peel-image.
 ---
 
 <script>
@@ -14,119 +14,19 @@
 	let frame: HTMLElement | undefined;
 	let framed: string | undefined;
 	let overlay: SVGSVGElement | undefined;
-	let glowField: HTMLElement | undefined;
 
 	const peelLink = (target: EventTarget | null) =>
 		target instanceof Element ? target.closest<HTMLAnchorElement>('a[data-peel]') : null;
-
-	const CORNERS = `
-		attribute vec2 corner;
-
-		void main() {
-			gl_Position = vec4(corner, 0.0, 1.0);
-		}
-	`;
-
-	// The glow's circles: one in each cell of a grid, so together they fill the window.
-	const COLUMNS = 8;
-	const ROWS = 5;
-
-	// Soft white circles on black, their light falling off so gradually that no edge shows, and overlapping so much
-	// that no one circle stands out.
-	const GLOW = `
-		precision highp float;
-		uniform vec2 size;
-		// Each circle's center, radius and brightness, in window heights.
-		uniform vec4 circles[${COLUMNS * ROWS}];
-
-		void main() {
-			vec2 p = gl_FragCoord.xy / size.y;
-			float light = 0.0;
-			for (int i = 0; i < ${COLUMNS * ROWS}; i++) {
-				vec2 d = (p - circles[i].xy) / circles[i].z;
-				light += circles[i].w * exp(-2.0 * dot(d, d));
-			}
-			// Where circles pile up the light nears white without flattening out, and the curve keeps the dark black.
-			gl_FragColor = vec4(vec3(pow(1.0 - exp(-light), 2.7)), 1.0);
-		}
-	`;
-
-	const random = (min: number, max: number) => min + Math.random() * (max - min);
-
-	/** Between 0 and 1 and back, at a speed in radians a second and from a starting point. */
-	const pulse = ([speed, phase]: [number, number], seconds: number) => 0.5 + 0.5 * Math.sin(seconds * speed + phase);
-
-	/**
-	 * A black window full of pulsing glow, for a site the peel can't show: black and white suit it whichever of its
-	 * themes it loads in. It moves only while the peel shows it.
-	 */
-	function glow() {
-		const field = document.createElement('div');
-		const canvas = document.createElement('canvas');
-		// The glow has no fine detail to lose, so it's drawn at half size and stretched.
-		canvas.width = Math.ceil(innerWidth / 2);
-		canvas.height = Math.ceil(innerHeight / 2);
-		field.append(canvas);
-		const gl = canvas.getContext('webgl', { alpha: false, antialias: false, depth: false });
-		if (!gl) return field;
-		const program = gl.createProgram()!;
-		for (const [type, source] of [
-			[gl.VERTEX_SHADER, CORNERS],
-			[gl.FRAGMENT_SHADER, GLOW],
-		] as const) {
-			const shader = gl.createShader(type)!;
-			gl.shaderSource(shader, source);
-			gl.compileShader(shader);
-			gl.attachShader(program, shader);
-		}
-		gl.bindAttribLocation(program, 0, 'corner');
-		gl.linkProgram(program);
-		gl.useProgram(program);
-		gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-		// One triangle big enough to cover the canvas.
-		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-		gl.enableVertexAttribArray(0);
-		gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-		gl.uniform2f(gl.getUniformLocation(program, 'size'), canvas.width, canvas.height);
-		const width = canvas.width / canvas.height;
-		// Each swells and fades on its own rhythm.
-		const circles = Array.from({ length: COLUMNS * ROWS }, (_, i) => ({
-			x: (((i % COLUMNS) + Math.random()) / COLUMNS) * width,
-			y: (Math.floor(i / COLUMNS) + Math.random()) / ROWS,
-			radius: random(0.18, 0.42),
-			brightness: random(0.06, 0.7),
-			swell: [random(1, 3.5), random(0, 2 * Math.PI)] as [number, number],
-			fade: [random(0.7, 2.5), random(0, 2 * Math.PI)] as [number, number],
-		}));
-		const values = new Float32Array(circles.length * 4);
-		const location = gl.getUniformLocation(program, 'circles');
-		const draw = (now: number) => {
-			const seconds = now / 1000;
-			circles.forEach((circle, i) => {
-				const radius = circle.radius * (0.7 + 0.6 * pulse(circle.swell, seconds));
-				const brightness = circle.brightness * (0.1 + 0.9 * pulse(circle.fade, seconds));
-				values.set([circle.x, circle.y, radius, brightness], i * 4);
-			});
-			gl.uniform4fv(location, values);
-			gl.drawArrays(gl.TRIANGLES, 0, 3);
-		};
-		const play = (now: number) => {
-			if (field.style.visibility !== 'visible') return;
-			draw(now);
-			requestAnimationFrame(play);
-		};
-		draw(performance.now());
-		field.addEventListener('peel', () => requestAnimationFrame(play));
-		return field;
-	}
 
 	function prepare(link: HTMLAnchorElement) {
 		if (frame && framed === link.href) return frame;
 		frame?.remove();
 		framed = link.href;
-		if (link.dataset.peelFrame === 'false') {
-			// Shared by every such link, as browsers allow a page only a few of the graphics contexts it draws with.
-			frame = glowField ??= glow();
+		if (link.dataset.peelImage) {
+			const picture = document.createElement('img');
+			picture.src = link.dataset.peelImage;
+			picture.alt = '';
+			frame = picture;
 		} else {
 			const site = document.createElement('iframe');
 			// Lets the site run as usual but not navigate this window. Set before src, which is when it takes effect.
@@ -199,8 +99,6 @@
 		const flap = el('polygon', { fill: 'url(#peel-paper)', filter: 'url(#peel-shadow)' }, overlay);
 		document.body.append(overlay);
 		page.style.visibility = 'visible';
-		// Starts a stand-in that moves.
-		page.dispatchEvent(new Event('peel'));
 
 		const start = performance.now();
 		const frameStep = (now: number) => {
@@ -277,10 +175,10 @@
 		inset: 0;
 		z-index: 2147483647;
 	}
-	.peel-frame canvas {
-		display: block;
-		width: 100%;
-		height: 100%;
+	/* A picture standing in for the page shows its top, as the page does when it loads. */
+	img.peel-frame {
+		object-fit: cover;
+		object-position: top;
 	}
 	/* A curled corner on a card that peels, hinting at the peel that follows a click. The card is positioned. */
 	.peel-card {

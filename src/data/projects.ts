@@ -5,8 +5,8 @@ export interface Peel {
 	href: string;
 	/** The page's color, shown while it loads. */
 	background: string;
-	/** False for a page that refuses to be framed: the peel reveals a glow instead, and the page loads after. */
-	frame?: boolean;
+	/** For a page that refuses to be framed, a picture the peel reveals in its place before the page loads. */
+	image?: string;
 }
 
 export interface Project {
@@ -21,8 +21,8 @@ export interface Project {
 	/** The drawing beside a large card's text. */
 	art?: 'git-graph' | 'chain-supply';
 	/**
-	 * Clicking the card, or a link to `href`, peels this page away to reveal that page. Without this, a card whose
-	 * main link is on this site or GitHub peels to that.
+	 * Clicking the card, or a link to `href`, peels this page away to reveal that page. Without this, the card peels
+	 * as its main link does (see linkPeel).
 	 */
 	peel?: Peel;
 	/** GitHub repository (owner/name) whose numbers the card shows, read when the site is built. */
@@ -95,19 +95,17 @@ export const projects: Project[] = [
 	},
 ];
 
-/** Where a project's card peels to, if anywhere. */
-export function cardPeel(project: Project): Peel | undefined {
-	if (project.peel) return project.peel;
-	const { href } = project.links[0];
+/** How a link to `href` peels, if it does: links on this site and to GitHub peel. */
+export function linkPeel(href: string): Peel | undefined {
 	if (href.startsWith('/')) return { href, background: 'var(--bg)' };
-	// GitHub refuses to be framed, and its theme can't be read from here, so the card reveals a black and white glow,
-	// which suits either theme, and GitHub loads after.
-	if (new URL(href).hostname === 'github.com') return { href, background: '#000000', frame: false };
+	// GitHub refuses to be framed, so the peel reveals a heavily blurred screenshot of one of its repository pages, in
+	// its light theme, and GitHub loads after.
+	if (new URL(href).hostname === 'github.com') return { href, background: '#ffffff', image: '/peel-github.webp' };
 	return undefined;
 }
 
-/** The attributes PagePeel reads from a link that peels. */
-export const peelAttrs = (peel: Peel) => ({
-	'data-peel': peel.background,
-	'data-peel-frame': peel.frame === false ? 'false' : undefined,
-});
+/** Where a project's card peels to, if anywhere. */
+export const cardPeel = (project: Project) => project.peel ?? linkPeel(project.links[0].href);
+
+/** The attributes PagePeel reads from a link that peels, or none. */
+export const peelAttrs = (peel?: Peel) => (peel ? { 'data-peel': peel.background, 'data-peel-image': peel.image } : {});

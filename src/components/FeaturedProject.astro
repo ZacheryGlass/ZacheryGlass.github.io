@@ -1,7 +1,7 @@
 ---
 import ChainSupply from './ChainSupply.astro';
 import GitGraph from './GitGraph.astro';
-import { cardPeel, peelAttrs, type Project } from '../data/projects';
+import { cardPeel, linkPeel, peelAttrs, type Project } from '../data/projects';
 import type { Counts, Release } from '../data/github';
 import { formatDate } from '../data/site';
 
@@ -19,7 +19,7 @@ const Art = project.art && arts[project.art];
 const peel = cardPeel(project);
 // The whole card links to the page it peels to, or, below the hero, to the main link.
 const cardHref = peel?.href ?? (hero ? undefined : project.links[0].href);
-const peelAttr = (href: string) => (peel && href === peel.href ? peelAttrs(peel) : {});
+const peelAttr = (href: string) => peelAttrs(href === peel?.href ? peel : linkPeel(href));
 ---
 
 <li class:list={['featured', { hero, 'has-art': Art, 'peel-card': Boolean(peel) }]}>
