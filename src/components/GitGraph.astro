@@ -1,0 +1,78 @@
+---
+// A drawing of Sidereal's log view: one branch merged back into main, with ref labels, messages and dates as bars.
+// Rows are 44 units apart; the third is the selected one.
+
+const row = (i: number) => 22 + i * 44;
+const main = [0, 1, 5, 6, 7];
+const branch = [2, 3, 4];
+const refs: { row: number; kind: 'tag' | 'head' }[] = [
+	{ row: 0, kind: 'tag' },
+	{ row: 2, kind: 'head' },
+	{ row: 5, kind: 'tag' },
+];
+const messageEnds = [354, 335, 331, 298, 344, 341, 316, 354];
+const messageStart = (i: number) => (refs.some((ref) => ref.row === i) ? 214 : 161);
+---
+
+<svg class="graph" viewBox="0 0 476 352" aria-hidden="true" focusable="false">
+	<rect class="selected" x="0" y={row(2) - 22} width="476" height="44" rx="6"></rect>
+	<path class="lane main" d="M33 0V352"></path>
+	<path class="lane branch" d={`M33 ${row(1)}C33 ${row(1) + 22} 77 ${row(2) - 22} 77 ${row(2)}V${row(4)}C77 ${row(4) + 22} 33 ${row(5) - 22} 33 ${row(5)}`}
+	></path>
+	{main.map((i) => <circle class="commit main" cx="33" cy={row(i)} r="5.5" />)}
+	{branch.map((i) => <circle class="commit branch" cx="77" cy={row(i)} r="5.5" />)}
+	{refs.map((ref) => <rect class:list={['ref', ref.kind]} x="162" y={row(ref.row) - 7} width="43" height="14" rx="7" />)}
+	{
+		messageEnds.map((end, i) => (
+			<rect class="bar" x={messageStart(i)} y={row(i) - 4} width={end - messageStart(i)} height="8" rx="4" />
+		))
+	}
+	{messageEnds.map((_, i) => <rect class="bar faint" x="404" y={row(i) - 4} width="50" height="8" rx="4" />)}
+</svg>
+
+<style>
+	.graph {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+	.selected {
+		fill: var(--hero-row);
+	}
+	.lane {
+		fill: none;
+		stroke-width: 2;
+	}
+	.lane.main {
+		stroke: #65a7fa;
+	}
+	.lane.branch {
+		stroke: #e78a45;
+	}
+	.commit {
+		stroke: var(--hero-bg);
+		stroke-width: 3;
+	}
+	.commit.main {
+		fill: #65a7fa;
+	}
+	.commit.branch {
+		fill: #e78a45;
+	}
+	.ref {
+		fill: none;
+		stroke-width: 2;
+	}
+	.ref.tag {
+		stroke: #00c0b0;
+	}
+	.ref.head {
+		stroke: #b98ceb;
+	}
+	.bar {
+		fill: var(--hero-bar);
+	}
+	.bar.faint {
+		fill: var(--hero-bar-faint);
+	}
+</style>

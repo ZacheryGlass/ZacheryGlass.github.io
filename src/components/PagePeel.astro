@@ -1,0 +1,165 @@
+---
+// Following a link marked data-peel curls this page away from the bottom-right corner, revealing the linked site,
+// then navigates there. Browsers don't animate between two sites, so the site is loaded into a full-window frame
+// when the pointer reaches the link and stands in for the real page until the navigation lands.
+---
+
+<script>
+	const NS = 'http://www.w3.org/2000/svg';
+	const DURATION = 900;
+
+	type Point = [number, number];
+
+	let frame: HTMLIFrameElement | undefined;
+	let overlay: SVGSVGElement | undefined;
+
+	const peelLink = (target: EventTarget | null) =>
+		target instanceof Element ? target.closest<HTMLAnchorElement>('a[data-peel]') : null;
+
+	function prepare(link: HTMLAnchorElement) {
+		if (frame?.src === link.href) return frame;
+		frame?.remove();
+		frame = document.createElement('iframe');
+		frame.className = 'peel-frame';
+		frame.src = link.href;
+		frame.title = link.textContent?.trim() ?? '';
+		frame.tabIndex = -1;
+		frame.setAttribute('aria-hidden', 'true');
+		frame.style.background = link.dataset.peel ?? '';
+		document.body.append(frame);
+		return frame;
+	}
+
+	function el<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, string | number>, parent?: Element) {
+		const node = document.createElementNS(NS, tag);
+		for (const [key, value] of Object.entries(attrs)) node.setAttribute(key, String(value));
+		parent?.append(node);
+		return node;
+	}
+
+	function gradient(id: string, stops: [number, string][], parent: Element) {
+		const node = el('linearGradient', { id, gradientUnits: 'userSpaceOnUse' }, parent);
+		for (const [offset, color] of stops) el('stop', { offset, style: `stop-color: ${color}` }, node);
+		return node;
+	}
+
+	const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+	const points = (list: Point[]) => list.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+
+	function peel(link: HTMLAnchorElement) {
+		const page = prepare(link);
+		const w = innerWidth;
+		const h = innerHeight;
+		const length = Math.hypot(w, h);
+		// The fold runs across the window's diagonal and sweeps from the bottom-right corner to the top-left one.
+		const n: Point = [w / length, h / length];
+		const along = ([x, y]: Point) => x * n[0] + y * n[1];
+		const corners: Point[] = [[0, 0], [w, 0], [w, h], [0, h]];
+
+		/** The part of the window past the fold, where the page has lifted away. */
+		function revealed(fold: number) {
+			const out: Point[] = [];
+			corners.forEach((p, i) => {
+				const q = corners[(i + 1) % 4];
+				const dp = along(p) - fold;
+				const dq = along(q) - fold;
+				if (dp >= 0) out.push(p);
+				if (dp >= 0 !== (dq >= 0)) {
+					const t = dp / (dp - dq);
+					out.push([p[0] + t * (q[0] - p[0]), p[1] + t * (q[1] - p[1])]);
+				}
+			});
+			return out;
+		}
+
+		overlay = el('svg', { class: 'peel-overlay', width: w, height: h, viewBox: `0 0 ${w} ${h}` });
+		const defs = el('defs', {}, overlay);
+		const paper = gradient(
+			'peel-paper',
+			[[0, 'var(--peel-crease)'], [0.05, 'var(--peel-light)'], [0.45, 'var(--peel-paper)'], [1, 'var(--peel-tip)']],
+			defs,
+		);
+		const shade = gradient('peel-shade', [[0, 'rgb(0 0 0 / 0.45)'], [1, 'rgb(0 0 0 / 0)']], defs);
+		const shadow = el('filter', { id: 'peel-shadow', x: '-25%', y: '-25%', width: '150%', height: '150%' }, defs);
+		el('feDropShadow', { dx: 0, dy: 0, stdDeviation: 10, 'flood-color': '#000', 'flood-opacity': 0.3 }, shadow);
+		const shading = el('polygon', { fill: 'url(#peel-shade)' }, overlay);
+		const flap = el('polygon', { fill: 'url(#peel-paper)', filter: 'url(#peel-shadow)' }, overlay);
+		document.body.append(overlay);
+		page.style.visibility = 'visible';
+
+		const start = performance.now();
+		const frameStep = (now: number) => {
+			const t = Math.min((now - start) / DURATION, 1);
+			const fold = length * (1 - ease(t));
+			const depth = length - fold;
+			const open = revealed(fold);
+			// The lifted part, folded back over the page.
+			const back = open.map(([x, y]): Point => {
+				const d = 2 * (along([x, y]) - fold);
+				return [x - d * n[0], y - d * n[1]];
+			});
+			const [fx, fy] = [n[0] * fold, n[1] * fold];
+			const reach = Math.min(90, depth);
+			for (const [node, toward] of [[paper, -depth], [shade, reach]] as const) {
+				node.setAttribute('x1', String(fx));
+				node.setAttribute('y1', String(fy));
+				node.setAttribute('x2', String(fx + n[0] * toward));
+				node.setAttribute('y2', String(fy + n[1] * toward));
+			}
+			page.style.clipPath = open.length
+				? `polygon(${open.map(([x, y]) => `${x}px ${y}px`).join(', ')})`
+				: 'polygon(0 0, 0 0, 0 0)';
+			shading.setAttribute('points', points(open));
+			flap.setAttribute('points', points(back));
+			if (t < 1) requestAnimationFrame(frameStep);
+			else location.assign(link.href);
+		};
+		requestAnimationFrame(frameStep);
+	}
+
+	for (const type of ['pointerover', 'pointerdown', 'focusin']) {
+		document.addEventListener(type, (event) => {
+			const link = peelLink(event.target);
+			if (link) prepare(link);
+		});
+	}
+
+	document.addEventListener('click', (event) => {
+		const link = peelLink(event.target);
+		if (!link || overlay || event.defaultPrevented) return;
+		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+		if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		event.preventDefault();
+		peel(link);
+	});
+
+	// Coming back with the back button can restore this page mid-peel.
+	addEventListener('pageshow', (event) => {
+		if (!event.persisted) return;
+		overlay?.remove();
+		overlay = undefined;
+		if (frame) {
+			frame.style.visibility = '';
+			frame.style.clipPath = '';
+		}
+	});
+</script>
+
+<style is:global>
+	.peel-frame {
+		position: fixed;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		border: 0;
+		z-index: 2147483646;
+		visibility: hidden;
+		pointer-events: none;
+		clip-path: polygon(0 0, 0 0, 0 0);
+	}
+	.peel-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 2147483647;
+	}
+</style>

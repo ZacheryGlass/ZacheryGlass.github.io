@@ -1,13 +1,21 @@
 ---
 import Base from '../layouts/Base.astro';
+import FeaturedProject from '../components/FeaturedProject.astro';
+import PagePeel from '../components/PagePeel.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import { projects } from '../data/projects';
-import { statLine } from '../data/github';
+import { latestRelease, repoCounts } from '../data/github';
 import { getPosts } from '../data/writing';
-import { bio, description, formatDate, person } from '../data/site';
+import { description, formatDate, person } from '../data/site';
 
 const featured = await Promise.all(
-	projects.filter((project) => project.featured).map(async (project) => ({ project, stat: await statLine(project) })),
+	projects
+		.filter((project) => project.featured)
+		.map(async (project) => ({
+			project,
+			release: project.repo && project.stat === 'release' ? await latestRelease(project.repo) : undefined,
+			counts: project.repo && project.stat === 'stars' ? await repoCounts(project.repo) : undefined,
+		})),
 );
 const more = projects.filter((project) => !project.featured);
 
@@ -19,19 +27,18 @@ const structuredData = { '@context': 'https://schema.org', ...person, descriptio
 	<main>
 		<header>
 			<h1>Zachery Glass</h1>
-			<p>{bio}</p>
 			<nav aria-label="Elsewhere">
 				<a href="https://github.com/ZacheryGlass">GitHub</a>
 			</nav>
 		</header>
 
-		<section aria-labelledby="projects">
-			<h2 id="projects">Projects</h2>
-			<ul class="featured">
-				{featured.map(({ project, stat }) => <ProjectCard project={project} stat={stat} featured />)}
-			</ul>
-			<p class="more" id="more-projects">More projects</p>
-			<ul class="projects" aria-labelledby="more-projects">
+		<ul class="featured" aria-label="Featured projects">
+			{featured.map((props) => <FeaturedProject {...props} />)}
+		</ul>
+
+		<section aria-labelledby="more-projects">
+			<h2 id="more-projects">More projects</h2>
+			<ul class="projects">
 				{more.map((project) => <ProjectCard project={project} />)}
 			</ul>
 		</section>
@@ -61,83 +68,110 @@ const structuredData = { '@context': 'https://schema.org', ...person, descriptio
 			)
 		}
 	</main>
+	<PagePeel />
 </Base>
 
 <style>
 	main {
-		max-width: 56rem;
+		max-width: 73rem;
 		margin: 0 auto;
-		padding: 4rem 1.5rem 5rem;
+		padding: 2.25rem clamp(1rem, 4vw, 1.5rem) 7rem;
 	}
-	header h1 {
-		font-size: 1.75rem;
-		font-weight: 600;
-		color: var(--heading);
-		letter-spacing: -0.01em;
-	}
-	header p {
-		margin-top: 0.5rem;
-		max-width: 40rem;
-		color: var(--muted);
-	}
-	header nav {
-		margin-top: 1rem;
-		font-size: 0.9375rem;
-	}
-	section {
-		margin-top: 3.5rem;
-	}
-	h2 {
-		font-size: 0.8125rem;
-		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: var(--muted);
-	}
-	.featured,
-	.projects,
-	.posts {
-		list-style: none;
-		display: grid;
+	header {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
 		gap: 1rem;
 	}
-	.featured {
-		margin-top: 1rem;
-		grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+	h1 {
+		font-family: var(--font-display);
+		font-size: 1.375rem;
+		font-weight: 700;
+		line-height: 1.3;
+		letter-spacing: -0.01em;
+		color: var(--heading);
 	}
-	.more {
-		margin-top: 2rem;
-		font-size: 0.8125rem;
-		color: var(--muted);
+	header nav {
+		font-weight: 500;
+	}
+	ul {
+		list-style: none;
+	}
+	.featured {
+		display: grid;
+		gap: 1.5rem;
+		margin-top: clamp(2rem, 5vw, 3.5rem);
+	}
+	section {
+		margin-top: 4.125rem;
+	}
+	h2 {
+		font-family: var(--font-display);
+		font-size: 1.75rem;
+		font-weight: 700;
+		line-height: 1.2;
+		letter-spacing: -0.02em;
+		color: var(--heading);
 	}
 	.projects {
-		margin-top: 0.75rem;
-		grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(min(17rem, 100%), 1fr));
+		gap: 1.25rem;
+		margin-top: 1.1875rem;
 	}
 	.posts {
-		margin-top: 1rem;
+		display: grid;
+		gap: 1.25rem;
+		margin-top: 1.1875rem;
+	}
+	.post {
+		position: relative;
+		padding: 2rem;
+		background: var(--surface);
+		border-radius: 16px;
 	}
 	.post .date {
-		font-size: 0.75rem;
+		font-size: 0.875rem;
+		font-weight: 500;
+		line-height: 1.3;
 		color: var(--muted);
 	}
 	.post h3 {
-		margin-top: 0.25rem;
-		font-size: 1.0625rem;
-		font-weight: 600;
+		margin-top: 0.75rem;
+		font-family: var(--font-display);
+		font-size: 1.75rem;
+		font-weight: 700;
+		line-height: 1.2;
+		letter-spacing: -0.02em;
 	}
+	/* The whole card is the link. */
 	.post h3 a {
 		color: var(--heading);
+		text-decoration: none;
 	}
-	.post h3 a:hover {
+	.post h3 a::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: 16px;
+	}
+	.post h3 a:focus-visible {
+		outline: none;
+	}
+	.post h3 a:focus-visible::after {
+		outline: 2px solid var(--link);
+		outline-offset: 2px;
+	}
+	.post:hover h3 a {
 		color: var(--link);
 	}
 	.standfirst {
-		margin-top: 0.25rem;
-		font-size: 0.9375rem;
+		margin-top: 0.75rem;
+		max-width: 44rem;
+		line-height: 1.6;
 	}
 	.feed {
 		margin-top: 1.5rem;
-		font-size: 0.875rem;
+		font-weight: 500;
 	}
 </style>

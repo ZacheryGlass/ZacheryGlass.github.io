@@ -5,9 +5,17 @@ export interface Project {
 	/** What kind of thing it is, shown above the name. */
 	kind: string;
 	description: string;
+	/** The first is the main one: the hero card's button, and where a small card goes when clicked. */
 	links: { label: string; href: string }[];
-	/** Shown in the large cards above the rest. */
-	featured?: boolean;
+	/** Shown above the rest: 'hero' is the dark card, 'card' a large white card. */
+	featured?: 'hero' | 'card';
+	/** The drawing beside a large card's text. */
+	art?: 'git-graph' | 'chain-supply';
+	/**
+	 * Following the main link peels this page away to reveal that site. `background` is the site's page color,
+	 * shown while it loads.
+	 */
+	peel?: { background: string };
 	/** GitHub repository (owner/name) whose numbers the card shows, read when the site is built. */
 	repo?: string;
 	/** Which numbers: stars and forks, or the latest release. */
@@ -21,30 +29,14 @@ export const projects: Project[] = [
 		description:
 			"A free Git graph, log and file history for VS Code, in the style of TortoiseGit's log view. Branches, tags, stashes, worktrees and submodules in one view, with checkout, merge, rebase and cherry-pick run from the graph. No account, no ads, no telemetry.",
 		links: [
-			{ label: 'Overview', href: '/sidereal/' },
 			{ label: 'Marketplace', href: 'https://marketplace.visualstudio.com/items?itemName=zglass.sidereal' },
+			{ label: 'Overview', href: '/sidereal/' },
 			{ label: 'GitHub', href: 'https://github.com/ZacheryGlass/sidereal' },
 		],
-		featured: true,
+		featured: 'hero',
+		art: 'git-graph',
 		repo: 'ZacheryGlass/sidereal',
 		stat: 'release',
-	},
-	{
-		name: '.claude',
-		kind: 'Claude Code configuration',
-		description:
-			'The settings, hooks, sub-agents, skills and slash commands I run Claude Code with, plus a Go status line that keeps cache, context and git state in view. Clone it and keep what fits.',
-		links: [{ label: 'GitHub', href: 'https://github.com/ZacheryGlass/.claude' }],
-		featured: true,
-		repo: 'ZacheryGlass/.claude',
-		stat: 'stars',
-	},
-	{
-		name: 'agent-sync',
-		kind: 'Developer tool',
-		description:
-			'Keeps agents, settings and preferences in sync across AI coding assistants: Claude Code, GitHub Copilot, Codex, Gemini CLI and more.',
-		links: [{ label: 'GitHub', href: 'https://github.com/ZacheryGlass/agent-sync' }],
 	},
 	{
 		name: 'StablecoinWatch',
@@ -55,12 +47,27 @@ export const projects: Project[] = [
 			{ label: 'stablecoinwatch.com', href: 'https://stablecoinwatch.com' },
 			{ label: 'GitHub', href: 'https://github.com/ZacheryGlass/StablecoinWatch' },
 		],
+		featured: 'card',
+		art: 'chain-supply',
+		peel: { background: '#0f172a' },
+	},
+	{
+		name: '.claude',
+		kind: 'Claude Code configuration',
+		description:
+			'The settings, hooks, sub-agents, skills and slash commands I run Claude Code with, plus a Go status line that keeps cache, context and git state in view. Clone it and keep what fits.',
+		links: [{ label: 'GitHub', href: 'https://github.com/ZacheryGlass/.claude' }],
+	},
+	{
+		name: 'agent-sync',
+		kind: 'Developer tool',
+		description: 'Keeps agents, settings and preferences in sync across AI assistants.',
+		links: [{ label: 'GitHub', href: 'https://github.com/ZacheryGlass/agent-sync' }],
 	},
 	{
 		name: 'BindKit',
 		kind: 'Windows app',
-		description:
-			'A system tray app that finds standalone Python scripts and runs them from a menu, on a schedule or with global hotkeys, each in isolation.',
+		description: 'A system tray app that finds standalone Python scripts and runs them from a menu.',
 		links: [{ label: 'GitHub', href: 'https://github.com/ZacheryGlass/BindKit' }],
 	},
 	{

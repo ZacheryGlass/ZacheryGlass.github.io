@@ -1,0 +1,175 @@
+---
+// A drawing of StablecoinWatch's coin table: each coin's supply split by chain, its value, and its peg over time.
+// Rows are 44 units apart, like the Git graph's; the first is the column header.
+
+const row = (i: number) => 22 + i * 44;
+const barX = 112;
+const barMax = 240;
+const barHeight = 12;
+const gap = 2;
+
+type Chain = 'a' | 'b' | 'c' | 'd' | 'e';
+const coins: { share: number; name: number; chains: [Chain, number][]; peg: number[] }[] = [
+	{ share: 1, name: 52, chains: [['b', 0.48], ['a', 0.36], ['c', 0.08], ['d', 0.05], ['e', 0.03]], peg: [0, -1.2, 0.4, 0.9, -0.6, 0.2, -0.9, 0.5, 0] },
+	{ share: 0.62, name: 44, chains: [['a', 0.57], ['c', 0.23], ['e', 0.12], ['d', 0.08]], peg: [0, 0.6, -0.8, 0.3, 1, -0.4, 0.2, -1, 0] },
+	{ share: 0.33, name: 36, chains: [['a', 0.78], ['e', 0.22]], peg: [0, -0.5, 0.9, -0.2, -1.1, 0.6, 0.8, -0.3, 0] },
+	{ share: 0.21, name: 48, chains: [['a', 0.64], ['d', 0.36]], peg: [0, -0.4, 0.3, 2.5, 7, 5, 2, 0.6, 0] },
+	{ share: 0.13, name: 40, chains: [['c', 1]], peg: [0, 0.8, -0.6, 0.4, -0.2, -0.9, 0.5, 0.2, 0] },
+];
+const depegged = 3;
+const selected = 1;
+
+/** A bar segment with only its outer ends rounded, so joined segments read as one bar. */
+function segment(x: number, y: number, w: number, roundLeft: boolean, roundRight: boolean) {
+	const r = barHeight / 2;
+	const rl = roundLeft ? r : 0;
+	const rr = roundRight ? r : 0;
+	const right = rr ? `A${r} ${r} 0 0 1 ${x + w - rr} ${y + barHeight}` : `V${y + barHeight}`;
+	const left = rl ? `A${r} ${r} 0 0 1 ${x + rl} ${y}` : `V${y}`;
+	return `M${x + rl} ${y}H${x + w - rr}${right}H${x + rl}${left}Z`;
+}
+
+const bars = coins.map((coin, i) => {
+	const total = coin.share * barMax;
+	const y = row(i + 1) - barHeight / 2;
+	let x = barX;
+	const segments = coin.chains.map(([chain, part], j) => {
+		const last = j === coin.chains.length - 1;
+		const w = total * part - (last ? 0 : gap);
+		const d = segment(x, y, w, j === 0, last);
+		x += w + gap;
+		return { chain, d };
+	});
+	return { segments, end: barX + total };
+});
+
+const pegX = 412;
+const pegLine = (i: number) =>
+	coins[i].peg.map((dy, j) => `${pegX + j * 8},${(row(i + 1) + dy).toFixed(1)}`).join(' ');
+const dip = coins[depegged].peg.indexOf(Math.max(...coins[depegged].peg));
+
+// The selected coin's chains, as a tooltip hanging below its bar.
+const tip = { x: 236, y: 132, w: 124, line: 18 };
+const tipLines = coins[selected].chains.map(([chain, part], k) => ({
+	chain,
+	y: tip.y + 17 + k * tip.line,
+	label: [46, 34, 52, 40][k],
+	value: Math.round(10 + part * 24),
+}));
+const tipHeight = tipLines.length * tip.line + 16;
+const caretX = 252;
+---
+
+<svg class="chain-supply" viewBox="0 0 476 264" aria-hidden="true" focusable="false">
+	<rect class="faint" x="0" y={row(0) - 3} width="28" height="6" rx="3"></rect>
+	<rect class="faint" x={barX} y={row(0) - 3} width="84" height="6" rx="3"></rect>
+	<rect class="faint" x={pegX} y={row(0) - 3} width="28" height="6" rx="3"></rect>
+	<path class="rule" d="M0 44.5H476"></path>
+
+	<rect class="selected" x="0" y={row(selected + 1) - 22} width="476" height="44" rx="6"></rect>
+
+	{
+		coins.map((coin, i) => (
+			<g>
+				<circle class="coin" cx="12" cy={row(i + 1)} r="10" />
+				<text class="coin-mark" x="12" y={row(i + 1) + 4}>
+					$
+				</text>
+				<rect class="bar" x="32" y={row(i + 1) - 8} width={coin.name} height="7" rx="3.5" />
+				<rect class="faint" x="32" y={row(i + 1) + 3} width={Math.round(coin.name * 0.55)} height="5" rx="2.5" />
+				{bars[i].segments.map((s) => <path class:list={['chain', s.chain]} d={s.d} />)}
+				<rect class="faint" x={bars[i].end + 10} y={row(i + 1) - 3.5} width={30 - i * 2} height="7" rx="3.5" />
+				<path class="peg-target" d={`M${pegX} ${row(i + 1)}H476`} />
+				<polyline class:list={['peg', { off: i === depegged }]} points={pegLine(i)} />
+			</g>
+		))
+	}
+	<circle class="dip" cx={pegX + dip * 8} cy={row(depegged + 1) + coins[depegged].peg[dip]} r="2.5"></circle>
+
+	<g class="tip">
+		<path
+			class="tip-card"
+			d={`M${tip.x + 8} ${tip.y}H${caretX - 6}L${caretX} ${tip.y - 6}L${caretX + 6} ${tip.y}H${tip.x + tip.w - 8}a8 8 0 0 1 8 8V${tip.y + tipHeight - 8}a8 8 0 0 1 -8 8H${tip.x + 8}a8 8 0 0 1 -8 -8V${tip.y + 8}a8 8 0 0 1 8 -8Z`}
+		></path>
+		{
+			tipLines.map((line) => (
+				<g>
+					<circle class:list={['chain', line.chain]} cx={tip.x + 14} cy={line.y} r="3.5" />
+					<rect class="faint" x={tip.x + 24} y={line.y - 3} width={line.label} height="6" rx="3" />
+					<rect class="bar" x={tip.x + tip.w - 12 - line.value} y={line.y - 3} width={line.value} height="6" rx="3" />
+				</g>
+			))
+		}
+	</g>
+</svg>
+
+<style>
+	.chain-supply {
+		display: block;
+		width: 100%;
+		height: auto;
+		--art-bar: color-mix(in srgb, var(--muted) 24%, var(--surface));
+		--art-faint: color-mix(in srgb, var(--muted) 13%, var(--surface));
+	}
+	.faint {
+		fill: var(--art-faint);
+	}
+	.bar {
+		fill: var(--art-bar);
+	}
+	.rule {
+		stroke: var(--art-faint);
+		stroke-width: 1;
+	}
+	.selected {
+		fill: color-mix(in srgb, var(--muted) 7%, var(--surface));
+	}
+	.coin {
+		fill: var(--heading);
+	}
+	.coin-mark {
+		fill: var(--surface);
+		font-size: 12px;
+		font-weight: 700;
+		text-anchor: middle;
+	}
+	.dip {
+		fill: #ef6b6b;
+	}
+	.tip-card {
+		fill: var(--surface);
+		stroke: var(--art-bar);
+		stroke-width: 1;
+		filter: drop-shadow(0 6px 12px rgb(14 18 32 / 0.12));
+	}
+	.chain.a {
+		fill: #5b7cfa;
+	}
+	.chain.b {
+		fill: #ef6b6b;
+	}
+	.chain.c {
+		fill: #14b8a6;
+	}
+	.chain.d {
+		fill: #f2a93b;
+	}
+	.chain.e {
+		fill: #a78bfa;
+	}
+	.peg-target {
+		stroke: var(--art-bar);
+		stroke-width: 1;
+		stroke-dasharray: 2 3;
+	}
+	.peg {
+		fill: none;
+		stroke: color-mix(in srgb, var(--muted) 65%, var(--surface));
+		stroke-width: 1.5;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+	.peg.off {
+		stroke: #ef6b6b;
+	}
+</style>

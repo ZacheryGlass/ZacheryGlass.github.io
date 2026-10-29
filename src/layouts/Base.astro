@@ -1,4 +1,5 @@
 ---
+import { Font } from 'astro:assets';
 import { bio } from '../data/site';
 
 interface Props {
@@ -43,7 +44,9 @@ const jsonLd = structuredData && JSON.stringify(structuredData).replace(/</g, '\
 		<meta property="og:image:height" content={String(image.height)} />
 		<meta property="og:image:alt" content={image.alt} />
 		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="color-scheme" content="dark light" />
+		<meta name="color-scheme" content="light dark" />
+		<Font cssVariable="--font-sans" preload />
+		<Font cssVariable="--font-display" preload />
 		{jsonLd && <script type="application/ld+json" set:html={jsonLd} />}
 	</head>
 	<body>
@@ -53,25 +56,53 @@ const jsonLd = structuredData && JSON.stringify(structuredData).replace(/</g, '\
 
 <style is:global>
 	:root {
-		--bg: #191a1b;
-		--surface: #121314;
-		--border: #2e3234;
-		--text: #d4d4d4;
-		--heading: #e8e8e8;
-		--muted: #8a8f94;
-		--link: #4fa3cc;
-		--link-hover: #297aa0;
+		--bg: #e9ecf3;
+		--surface: #ffffff;
+		--border: #d6dbe7;
+		--text: #2a2f42;
+		--heading: #0e1220;
+		--muted: #4a5068;
+		--link: #2b44c8;
+		--link-hover: #1a2c8f;
+		/* The dark card that leads the home page, dark in both color schemes. */
+		--hero-bg: #0e1220;
+		--hero-border: #0e1220;
+		--hero-heading: #ffffff;
+		--hero-text: #d3d7e6;
+		--hero-muted: #a8aec4;
+		--hero-link: #9db4ff;
+		--hero-link-hover: #c9d6ff;
+		--hero-button: #9ebdff;
+		--hero-button-hover: #bcd1ff;
+		--hero-button-text: #0a0f1f;
+		--hero-row: #1c202d;
+		--hero-bar: #3e414d;
+		--hero-bar-faint: #262a36;
+		/* The back of the page when it peels away. */
+		--peel-crease: #c3cad9;
+		--peel-light: #ffffff;
+		--peel-paper: #f2f4f8;
+		--peel-tip: #dde2ec;
 	}
-	@media (prefers-color-scheme: light) {
+	@media (prefers-color-scheme: dark) {
 		:root {
-			--bg: #fafafa;
-			--surface: #ffffff;
-			--border: #dfe1e3;
-			--text: #2b2f33;
-			--heading: #111315;
-			--muted: #5f656b;
-			--link: #1f6f99;
-			--link-hover: #165273;
+			--bg: #0a0d16;
+			--surface: #131827;
+			--border: #262c3e;
+			--text: #c3c8d8;
+			--heading: #f2f4fa;
+			--muted: #8f95ab;
+			--link: #9db4ff;
+			--link-hover: #c9d6ff;
+			--hero-bg: #161c2f;
+			--hero-border: #2a3250;
+			--hero-row: #20273b;
+			--hero-bar: #434a62;
+			--hero-bar-faint: #2b3248;
+			--peel-crease: #070910;
+			--peel-light: #2c344a;
+			--peel-paper: #1d2335;
+			--peel-tip: #151a28;
 		}
 	}
 	* {
@@ -82,16 +113,18 @@ const jsonLd = structuredData && JSON.stringify(structuredData).replace(/</g, '\
 	body {
 		background: var(--bg);
 		color: var(--text);
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		font-family: var(--font-sans);
 		line-height: 1.55;
+		-webkit-font-smoothing: antialiased;
 	}
 	a {
 		color: var(--link);
-		text-decoration: none;
+		text-decoration: underline;
+		text-decoration-thickness: 1.5px;
+		text-underline-offset: 0.25em;
 	}
 	a:hover {
 		color: var(--link-hover);
-		text-decoration: underline;
 	}
 	a:focus-visible {
 		outline: 2px solid var(--link);
