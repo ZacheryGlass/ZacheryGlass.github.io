@@ -2,8 +2,7 @@
 // Following a link marked data-peel curls this page away from the bottom-right corner, revealing the linked site,
 // then navigates there. Browsers don't animate between two sites, so the site is loaded into a full-window frame
 // when the pointer reaches the link and stands in for the real page until the navigation lands. A site that refuses
-// to be framed is marked data-peel-frame="false", and the peel reveals black and white blotches drifting over its
-// page color instead.
+// to be framed is marked data-peel-frame="false", and the peel reveals black and white smoke instead.
 ---
 
 <script>
@@ -15,26 +14,106 @@
 	let frame: HTMLElement | undefined;
 	let framed: string | undefined;
 	let overlay: SVGSVGElement | undefined;
+	let smokeField: HTMLElement | undefined;
 
 	const peelLink = (target: EventTarget | null) =>
 		target instanceof Element ? target.closest<HTMLAnchorElement>('a[data-peel]') : null;
 
-	const random = (min: number, max: number) => min + Math.random() * (max - min);
+	const CORNERS = `
+		attribute vec2 corner;
 
-	/** White shapes drifting over each other, inverting what's beneath them, so the screen turns in black and white. */
-	function blotches() {
-		const field = document.createElement('div');
-		field.classList.add('peel-blotches');
-		for (let i = 0; i < 7; i++) {
-			const blotch = document.createElement('span');
-			blotch.style.setProperty('--size', `${random(30, 65)}vmax`);
-			blotch.style.setProperty('--from', `${random(-60, 60)}vw, ${random(-60, 60)}vh`);
-			blotch.style.setProperty('--to', `${random(-60, 60)}vw, ${random(-60, 60)}vh`);
-			blotch.style.animationDuration = `${random(3, 6)}s`;
-			// Already on the move when the peel reveals them.
-			blotch.style.animationDelay = `${-random(0, 6)}s`;
-			field.append(blotch);
+		void main() {
+			gl_Position = vec4(corner, 0.0, 1.0);
 		}
+	`;
+
+	// Noise whose coordinates are pushed around by more noise, which curls it like smoke.
+	const SMOKE = `
+		precision highp float;
+		uniform vec2 size;
+		uniform float time;
+
+		float hash(vec2 p) {
+			return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+		}
+
+		float noise(vec2 p) {
+			vec2 i = floor(p);
+			vec2 f = fract(p);
+			vec2 u = f * f * (3.0 - 2.0 * f);
+			float bottom = mix(hash(i), hash(i + vec2(1.0, 0.0)), u.x);
+			float top = mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), u.x);
+			return mix(bottom, top, u.y);
+		}
+
+		float fbm(vec2 p) {
+			float sum = 0.0;
+			float amplitude = 0.5;
+			for (int i = 0; i < 4; i++) {
+				sum += amplitude * noise(p);
+				p = p * 2.0 + vec2(1.7, 9.2);
+				amplitude *= 0.5;
+			}
+			return sum;
+		}
+
+		void main() {
+			// Drifting as it curls. At this scale the window always holds some of both black and white.
+			vec2 p = gl_FragCoord.xy / size.y * 1.8 + vec2(0.12, 0.04) * time;
+			float t = time * 0.22;
+			vec2 q = vec2(fbm(p + vec2(0.0, t)), fbm(p + vec2(5.2, 1.3) - t));
+			vec2 r = vec2(fbm(p + 1.5 * q + vec2(1.7, 9.2) + 0.7 * t), fbm(p + 1.5 * q + vec2(8.3, 2.8) - 0.6 * t));
+			// The smoke's values bunch around 0.45; a soft ramp across them gives black, white and fog between.
+			gl_FragColor = vec4(vec3(smoothstep(0.34, 0.56, fbm(p + 1.5 * r))), 1.0);
+		}
+	`;
+
+	/**
+	 * Black and white smoke curling across the window, for a site the peel can't show: black and white suit it
+	 * whichever of its themes it loads in. It moves only while the peel shows it.
+	 */
+	function smoke() {
+		const field = document.createElement('div');
+		const canvas = document.createElement('canvas');
+		// Smoke has no fine detail to lose, so it's drawn at half size and stretched.
+		canvas.width = Math.ceil(innerWidth / 2);
+		canvas.height = Math.ceil(innerHeight / 2);
+		field.append(canvas);
+		const gl = canvas.getContext('webgl', { alpha: false, antialias: false, depth: false });
+		if (!gl) return field;
+		const program = gl.createProgram()!;
+		for (const [type, source] of [
+			[gl.VERTEX_SHADER, CORNERS],
+			[gl.FRAGMENT_SHADER, SMOKE],
+		] as const) {
+			const shader = gl.createShader(type)!;
+			gl.shaderSource(shader, source);
+			gl.compileShader(shader);
+			gl.attachShader(program, shader);
+		}
+		gl.bindAttribLocation(program, 0, 'corner');
+		gl.linkProgram(program);
+		gl.useProgram(program);
+		gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+		// One triangle big enough to cover the canvas.
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+		gl.enableVertexAttribArray(0);
+		gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+		gl.uniform2f(gl.getUniformLocation(program, 'size'), canvas.width, canvas.height);
+		const time = gl.getUniformLocation(program, 'time');
+		// Starts somewhere different on each visit.
+		const start = performance.now() - Math.random() * 20_000;
+		const draw = (now: number) => {
+			gl.uniform1f(time, (now - start) / 1000);
+			gl.drawArrays(gl.TRIANGLES, 0, 3);
+		};
+		const play = (now: number) => {
+			if (field.style.visibility !== 'visible') return;
+			draw(now);
+			requestAnimationFrame(play);
+		};
+		draw(performance.now());
+		field.addEventListener('peel', () => requestAnimationFrame(play));
 		return field;
 	}
 
@@ -43,7 +122,8 @@
 		frame?.remove();
 		framed = link.href;
 		if (link.dataset.peelFrame === 'false') {
-			frame = blotches();
+			// Shared by every such link, as browsers allow a page only a few of the graphics contexts it draws with.
+			frame = smokeField ??= smoke();
 		} else {
 			const site = document.createElement('iframe');
 			// Lets the site run as usual but not navigate this window. Set before src, which is when it takes effect.
@@ -116,6 +196,8 @@
 		const flap = el('polygon', { fill: 'url(#peel-paper)', filter: 'url(#peel-shadow)' }, overlay);
 		document.body.append(overlay);
 		page.style.visibility = 'visible';
+		// Starts a stand-in that moves.
+		page.dispatchEvent(new Event('peel'));
 
 		const start = performance.now();
 		const frameStep = (now: number) => {
@@ -192,31 +274,10 @@
 		inset: 0;
 		z-index: 2147483647;
 	}
-	/* Black and white suit the site the peel can't show, whichever of its themes it loads in. */
-	.peel-blotches {
-		overflow: hidden;
-		isolation: isolate;
-	}
-	.peel-blotches span {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		width: var(--size);
-		height: var(--size);
-		margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
-		background: #fff;
-		mix-blend-mode: difference;
-		animation: peel-blotch ease-in-out infinite alternate;
-	}
-	@keyframes peel-blotch {
-		from {
-			transform: translate(var(--from)) rotate(0turn);
-			border-radius: 42% 58% 63% 37% / 41% 44% 56% 59%;
-		}
-		to {
-			transform: translate(var(--to)) rotate(0.4turn);
-			border-radius: 63% 37% 38% 62% / 58% 63% 37% 42%;
-		}
+	.peel-frame canvas {
+		display: block;
+		width: 100%;
+		height: 100%;
 	}
 	/* A curled corner on a card that peels, hinting at the peel that follows a click. The card is positioned. */
 	.peel-card {
