@@ -12,10 +12,10 @@ export interface Project {
 	/** The drawing beside a large card's text. */
 	art?: 'git-graph' | 'chain-supply';
 	/**
-	 * Following the main link peels this page away to reveal that site. `background` is the site's page color,
-	 * shown while it loads.
+	 * Clicking the card, or a link to `href`, peels this page away to reveal that page. `background` is its page
+	 * color, shown while it loads. The page must allow being framed.
 	 */
-	peel?: { background: string };
+	peel?: { href: string; background: string };
 	/** GitHub repository (owner/name) whose numbers the card shows, read when the site is built. */
 	repo?: string;
 	/** Which numbers: stars and forks, or the latest release. */
@@ -35,6 +35,8 @@ export const projects: Project[] = [
 		],
 		featured: 'hero',
 		art: 'git-graph',
+		// The Marketplace refuses to be framed, so the card peels to the overview page instead.
+		peel: { href: '/sidereal/', background: 'var(--bg)' },
 		repo: 'ZacheryGlass/sidereal',
 		stat: 'release',
 	},
@@ -49,7 +51,7 @@ export const projects: Project[] = [
 		],
 		featured: 'card',
 		art: 'chain-supply',
-		peel: { background: '#0f172a' },
+		peel: { href: 'https://stablecoinwatch.com', background: '#0f172a' },
 	},
 	{
 		name: '.claude',

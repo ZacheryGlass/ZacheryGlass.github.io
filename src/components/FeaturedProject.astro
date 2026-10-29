@@ -16,22 +16,23 @@ const { project, release, counts } = Astro.props;
 const hero = project.featured === 'hero';
 const arts = { 'git-graph': GitGraph, 'chain-supply': ChainSupply };
 const Art = project.art && arts[project.art];
-const main = project.links[0];
-const peel = project.peel?.background;
-const peelAttr = (href: string) => (peel && href === main.href ? peel : undefined);
+const peel = project.peel;
+// The whole card links to the page it peels to, or, below the hero, to the main link.
+const cardHref = peel?.href ?? (hero ? undefined : project.links[0].href);
+const peelAttr = (href: string) => (peel && href === peel.href ? peel.background : undefined);
 ---
 
-<li class:list={['featured', { hero, 'has-art': Art, peel }]}>
+<li class:list={['featured', { hero, 'has-art': Art, peel: Boolean(peel) }]}>
 	<div class="text">
 		<p class="kind">{project.kind}</p>
 		<h2>
 			{
-				hero ? (
-					project.name
-				) : (
-					<a href={main.href} data-peel={peelAttr(main.href)}>
+				cardHref ? (
+					<a href={cardHref} data-peel={peelAttr(cardHref)}>
 						{project.name}
 					</a>
+				) : (
+					project.name
 				)
 			}
 		</h2>
@@ -81,11 +82,12 @@ const peelAttr = (href: string) => (peel && href === main.href ? peel : undefine
 	.has-art {
 		grid-template-columns: 1fr 1fr;
 	}
-	/* Below the hero, the whole card is the main link; the other links sit above it. */
-	.featured:not(.hero) {
+	/* The whole card is a link; the other links sit above it. */
+	.featured {
 		position: relative;
 	}
-	h2 a {
+	.featured h2 a,
+	.featured h2 a:hover {
 		color: inherit;
 		text-decoration: none;
 	}
@@ -95,6 +97,9 @@ const peelAttr = (href: string) => (peel && href === main.href ? peel : undefine
 		inset: 0;
 		border-radius: 20px;
 	}
+	.hero h2 a::after {
+		border-radius: 24px;
+	}
 	h2 a:focus-visible {
 		outline: none;
 	}
@@ -102,7 +107,7 @@ const peelAttr = (href: string) => (peel && href === main.href ? peel : undefine
 		outline: 2px solid var(--link);
 		outline-offset: 2px;
 	}
-	.featured:not(.hero) .links {
+	.featured .links {
 		position: relative;
 		z-index: 1;
 	}
