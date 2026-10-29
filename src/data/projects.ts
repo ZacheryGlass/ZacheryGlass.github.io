@@ -5,8 +5,8 @@ export interface Peel {
 	href: string;
 	/** The page's color, shown while it loads. */
 	background: string;
-	/** For a page that refuses to be framed, a picture the peel reveals in its place before the page loads. */
-	image?: string;
+	/** For a page that refuses to be framed, a page of this site the peel reveals in its place before the page loads. */
+	standIn?: string;
 }
 
 export interface Project {
@@ -98,9 +98,11 @@ export const projects: Project[] = [
 /** How a link to `href` peels, if it does: links on this site and to GitHub peel. */
 export function linkPeel(href: string): Peel | undefined {
 	if (href.startsWith('/')) return { href, background: 'var(--bg)' };
-	// GitHub refuses to be framed, so the peel reveals a heavily blurred screenshot of one of its repository pages, in
-	// its light theme, and GitHub loads after.
-	if (new URL(href).hostname === 'github.com') return { href, background: '#ffffff', image: '/peel-github.webp' };
+	// GitHub refuses to be framed, so the peel reveals a blurred, made-up page for the repository, and GitHub loads after.
+	const url = new URL(href);
+	if (url.hostname === 'github.com') {
+		return { href, background: 'light-dark(#ffffff, #0d1117)', standIn: `/peel/github/#${url.pathname.slice(1)}` };
+	}
 	return undefined;
 }
 
@@ -108,4 +110,4 @@ export function linkPeel(href: string): Peel | undefined {
 export const cardPeel = (project: Project) => project.peel ?? linkPeel(project.links[0].href);
 
 /** The attributes PagePeel reads from a link that peels, or none. */
-export const peelAttrs = (peel?: Peel) => (peel ? { 'data-peel': peel.background, 'data-peel-image': peel.image } : {});
+export const peelAttrs = (peel?: Peel) => (peel ? { 'data-peel': peel.background, 'data-peel-stand-in': peel.standIn } : {});

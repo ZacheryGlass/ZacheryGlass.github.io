@@ -2,7 +2,7 @@
 // Following a link marked data-peel curls this page away from the bottom-right corner, revealing the linked site,
 // then navigates there. Browsers don't animate between two sites, so the site is loaded into a full-window frame
 // when the pointer reaches the link and stands in for the real page until the navigation lands. A site that refuses
-// to be framed is given a picture to reveal in its place, in data-peel-image.
+// to be framed is given a page of this site to frame in its place, in data-peel-stand-in.
 ---
 
 <script>
@@ -11,7 +11,7 @@
 
 	type Point = [number, number];
 
-	let frame: HTMLElement | undefined;
+	let frame: HTMLIFrameElement | undefined;
 	let framed: string | undefined;
 	let overlay: SVGSVGElement | undefined;
 
@@ -22,21 +22,13 @@
 		if (frame && framed === link.href) return frame;
 		frame?.remove();
 		framed = link.href;
-		if (link.dataset.peelImage) {
-			const picture = document.createElement('img');
-			picture.src = link.dataset.peelImage;
-			picture.alt = '';
-			frame = picture;
-		} else {
-			const site = document.createElement('iframe');
-			// Lets the site run as usual but not navigate this window. Set before src, which is when it takes effect.
-			site.sandbox.add('allow-scripts', 'allow-same-origin');
-			site.src = link.href;
-			site.title = link.textContent?.trim() ?? '';
-			site.tabIndex = -1;
-			frame = site;
-		}
-		frame.classList.add('peel-frame');
+		frame = document.createElement('iframe');
+		frame.className = 'peel-frame';
+		// Lets the site run as usual but not navigate this window. Set before src, which is when it takes effect.
+		frame.sandbox.add('allow-scripts', 'allow-same-origin');
+		frame.src = link.dataset.peelStandIn ?? link.href;
+		frame.title = link.textContent?.trim() ?? '';
+		frame.tabIndex = -1;
 		frame.setAttribute('aria-hidden', 'true');
 		frame.style.background = link.dataset.peel ?? '';
 		document.body.append(frame);
@@ -174,11 +166,6 @@
 		position: fixed;
 		inset: 0;
 		z-index: 2147483647;
-	}
-	/* A picture standing in for the page shows its top, as the page does when it loads. */
-	img.peel-frame {
-		object-fit: cover;
-		object-position: top;
 	}
 	/* A curled corner on a card that peels, hinting at the peel that follows a click. The card is positioned. */
 	.peel-card {
