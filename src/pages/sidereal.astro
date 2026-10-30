@@ -9,10 +9,13 @@ import { formatDate, person } from '../data/site';
 
 const name = 'Sidereal: Git Graph, Log & Worktrees';
 const description =
-	'Free Git graph, log and file history with worktrees and submodules. No account, no ads, no telemetry. TortoiseGit-style and actively maintained.';
+	'Free Git graph, log and file history with worktrees and submodules, in VS Code or as a standalone app. No account, no ads, no telemetry. TortoiseGit-style and actively maintained.';
 const repo = 'https://github.com/ZacheryGlass/sidereal';
 const media = 'https://raw.githubusercontent.com/ZacheryGlass/sidereal/main/media';
 const marketplace = 'https://marketplace.visualstudio.com/items?itemName=zglass.sidereal';
+const openVsx = 'https://open-vsx.org/extension/zglass/sidereal';
+// The standalone app's files are named by version, so the link goes to the latest release's page.
+const download = `${repo}/releases/latest`;
 const release = await latestRelease('ZacheryGlass/sidereal');
 
 const structuredData = {
@@ -21,6 +24,7 @@ const structuredData = {
 	name,
 	description,
 	applicationCategory: 'DeveloperApplication',
+	operatingSystem: 'Windows, macOS, Linux',
 	url: new URL(Astro.url.pathname, Astro.site).href,
 	downloadUrl: marketplace,
 	screenshot: `${media}/graph-dark.png`,
@@ -54,7 +58,7 @@ const screenshots = [
 ---
 
 <Base
-	title={`${name} for VS Code`}
+	title={`${name} for VS Code, macOS, Windows and Linux`}
 	description={description}
 	structuredData={structuredData}
 	image={{
@@ -70,21 +74,21 @@ const screenshots = [
 			<p class="home"><a href="/">Zachery Glass</a></p>
 			<div class="intro">
 				<div>
-					<p class="kind">VS Code extension</p>
+					<p class="kind">VS Code extension and desktop app</p>
 					<h1>{name}</h1>
 					<p class="lead">
-						A free Git graph, log and file history for VS Code, modeled on TortoiseGit's log view, with worktrees and
-						submodules built in. No account, no ads, no telemetry.
+						A free Git graph, log and file history, modeled on TortoiseGit's log view, with worktrees and submodules built
+						in. Use it in VS Code or as a standalone app for macOS, Windows and Linux. No account, no ads, no telemetry.
 					</p>
 					<p class="actions">
 						<a class="button primary" href="vscode:extension/zglass.sidereal">Install in VS Code</a>
-						<a class="button" href={marketplace}>View on the Marketplace</a>
+						<a class="button" href={download}>Download the app</a>
 					</p>
 					<p class="meta">
 						{release && <span>{release.tag} · released {formatDate(release.date)} · </span>}
-						<a href={`${repo}/blob/main/CHANGELOG.md`}>Changelog</a>{' · '}<a href={`${repo}/issues`}>Issues</a>{' · '}<a
-							href={`${repo}/discussions`}>Discussions</a
-						>
+						<a href={marketplace}>Marketplace</a>{' · '}<a href={openVsx}>Open VSX</a>{' · '}<a
+							href={`${repo}/blob/main/CHANGELOG.md`}>Changelog</a
+						>{' · '}<a href={`${repo}/issues`}>Issues</a>{' · '}<a href={`${repo}/discussions`}>Discussions</a>
 					</p>
 				</div>
 				<div class="mark" data-sky-mark></div>
@@ -109,7 +113,8 @@ const screenshots = [
 				<li><strong>No account.</strong> Nothing to sign in to.</li>
 				<li>
 					<strong>No ads, no telemetry.</strong> Sidereal makes no network requests of its own: the only network traffic
-					comes from the Git commands you start, such as fetch, pull and push.
+					comes from the Git commands you start, such as fetch, pull and push (and the
+					standalone app's check for updates).
 				</li>
 				<li>
 					<strong>Maintained.</strong> Fixes and features ship regularly; the <a href={`${repo}/blob/main/CHANGELOG.md`}
@@ -190,6 +195,18 @@ const screenshots = [
 			</ul>
 		</section>
 
+		<section aria-labelledby="app">
+			<h2 id="app">Standalone app</h2>
+			<p class="standalone">
+				Sidereal also runs without VS Code, as an app for macOS 12 or later, Windows 10 or later and Linux (x64). Each
+				repository opens in a tab, diffs open in your diff tool and conflicts in your merge tool. It needs Git 2.33 or
+				later. The <a href={`${repo}#extension-vs-standalone-app`}>README</a> compares it with the extension.
+			</p>
+			<p class="actions">
+				<a class="button primary" href={download}>Download the app</a>
+			</p>
+		</section>
+
 		<section aria-labelledby="coming-from" class="columns">
 			<h2 id="coming-from">Coming from another tool</h2>
 			<div>
@@ -240,7 +257,7 @@ const screenshots = [
 				<dt>Does Sidereal need a GitKraken, GitHub or Microsoft account?</dt>
 				<dd>No. There is nothing to sign in to.</dd>
 				<dt>Does Sidereal collect telemetry?</dt>
-				<dd>No. It makes no network requests of its own.</dd>
+				<dd>No. It makes no network requests of its own, besides the standalone app's check for updates.</dd>
 				<dt>Is Sidereal free for commercial use?</dt>
 				<dd>Yes. The license allows personal and internal business use at no cost.</dd>
 				<dt>Is Sidereal open source?</dt>
@@ -250,14 +267,19 @@ const screenshots = [
 					> are public.
 				</dd>
 				<dt>Which versions does Sidereal need?</dt>
-				<dd>VS Code 1.74 or later and Git 2.33 or later.</dd>
+				<dd>In VS Code: 1.74 or later. The app: macOS 12, Windows 10 or x64 Linux. Both need Git 2.33 or later.</dd>
+				<dt>Does Sidereal run without VS Code?</dt>
+				<dd>Yes. The standalone app runs on macOS, Windows and Linux.</dd>
 			</dl>
 		</section>
 
 		<footer>
 			<p class="actions">
 				<a class="button primary" href="vscode:extension/zglass.sidereal">Install in VS Code</a>
-				<a class="button" href={marketplace}>View on the Marketplace</a>
+				<a class="button" href={download}>Download the app</a>
+			</p>
+			<p class="meta">
+				<a href={marketplace}>Marketplace</a>{' · '}<a href={openVsx}>Open VSX</a>
 			</p>
 			<p class="meta">
 				Free for personal and internal business use. Made by <a href="/">Zachery Glass</a>.
@@ -497,7 +519,8 @@ const screenshots = [
 		margin-top: 0.5rem;
 	}
 	.reasons,
-	.features {
+	.features,
+	.standalone {
 		margin-top: 1rem;
 		max-width: 44rem;
 	}
