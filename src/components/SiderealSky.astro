@@ -1,7 +1,7 @@
 ---
 // The animated night sky behind the Sidereal page. Commits light up one by one as stars in a slowly turning sky, then
 // the constellation straightens into the Sidereal mark, landing in the element marked data-sky-mark beside the page's
-// own title and scrolling away with it. The sky stays fixed behind the page and turns a little as the page scrolls.
+// own title and scrolling away with it. The sky stays fixed behind the page, turning slowly on its own.
 // The intro plays once; with reduced motion the sky shows its last frame and stays still. The page's h1 carries the
 // name for screen readers and search engines, so the canvas is hidden from them.
 ---
@@ -44,8 +44,6 @@
 	const LABEL = 26;
 	/** Radians per second: one turn of the sky every 23 minutes or so. */
 	const OMEGA = 0.0045;
-	/** Radians per CSS pixel scrolled. */
-	const SCROLL_TURN = 0.00015;
 	/** Stars per square design unit. */
 	const DENSITY = 2.29e-4;
 	// Sidereal's own lane colors, plus a third for the second branch.
@@ -369,7 +367,7 @@
 			c.fillRect(0, 0, W, H);
 			c.drawImage(s.nebula, 0, 0, W, H);
 
-			const rot = OMEGA * t + (moving ? scrollY * SCROLL_TURN : 0);
+			const rot = OMEGA * t;
 			// Right ascension spokes and declination circles around the pole, turning with the stars.
 			const gridAlpha = 0.06 * prog(t, 0.3, 1.6) * lerp(1, 0.55, prog(t, 4.2, 5.6));
 			if (gridAlpha > 0) {
