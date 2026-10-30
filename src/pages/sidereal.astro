@@ -3,7 +3,6 @@
 // so new screenshots show up here without a change. If GitHub Pages is turned on for that repository, its site
 // takes over this /sidereal/ path.
 import Base from '../layouts/Base.astro';
-import HistoryThread from '../components/HistoryThread.astro';
 import SiderealSky from '../components/SiderealSky.astro';
 import { latestRelease } from '../data/github';
 import { formatDate, person } from '../data/site';
@@ -65,51 +64,46 @@ const screenshots = [
 		alt: 'The Sidereal commit graph beside the References side bar, which lists branches, worktrees and submodules',
 	}}
 >
+	<SiderealSky />
 	<main>
-		<HistoryThread />
 		<header>
 			<p class="home"><a href="/">Zachery Glass</a></p>
-			<div class="sky-card">
-				<SiderealSky />
-				<div class="sky-body">
-					<div>
-						<p class="kind">VS Code extension</p>
-						<h1>{name}</h1>
-						<p class="lead">
-							A free Git graph, log and file history for VS Code, modeled on TortoiseGit's log view, with worktrees
-							and submodules built in. No account, no ads, no telemetry.
-						</p>
-						<p class="actions">
-							<a class="button primary" href="vscode:extension/zglass.sidereal">Install in VS Code</a>
-							<a class="button" href={marketplace}>View on the Marketplace</a>
-						</p>
-						<p class="meta">
-							{release && <span>{release.tag} · released {formatDate(release.date)} · </span>}
-							<a href={`${repo}/blob/main/CHANGELOG.md`}>Changelog</a>{' · '}<a href={`${repo}/issues`}>Issues</a
-							>{' · '}<a href={`${repo}/discussions`}>Discussions</a>
-						</p>
-					</div>
-					<div class="mark" data-sky-mark></div>
+			<div class="intro">
+				<div>
+					<p class="kind">VS Code extension</p>
+					<h1>{name}</h1>
+					<p class="lead">
+						A free Git graph, log and file history for VS Code, modeled on TortoiseGit's log view, with worktrees and
+						submodules built in. No account, no ads, no telemetry.
+					</p>
+					<p class="actions">
+						<a class="button primary" href="vscode:extension/zglass.sidereal">Install in VS Code</a>
+						<a class="button" href={marketplace}>View on the Marketplace</a>
+					</p>
+					<p class="meta">
+						{release && <span>{release.tag} · released {formatDate(release.date)} · </span>}
+						<a href={`${repo}/blob/main/CHANGELOG.md`}>Changelog</a>{' · '}<a href={`${repo}/issues`}>Issues</a>{' · '}<a
+							href={`${repo}/discussions`}>Discussions</a
+						>
+					</p>
 				</div>
+				<div class="mark" data-sky-mark></div>
 			</div>
 		</header>
 
 		<figure class="hero">
 			<button class="zoom" type="button">
-				<picture>
-					<source srcset={`${media}/graph-light.png`} media="(prefers-color-scheme: light)" />
-					<img
-						src={`${media}/graph-dark.png`}
-						width="1600"
-						height="1000"
-						alt="The commit graph beside the References side bar, which lists branches, worktrees and submodules"
-					/>
-				</picture>
+				<img
+					src={`${media}/graph-dark.png`}
+					width="1600"
+					height="1000"
+					alt="The commit graph beside the References side bar, which lists branches, worktrees and submodules"
+				/>
 			</button>
 		</figure>
 
 		<section aria-labelledby="why">
-			<h2 id="why" data-commit="main">Why Sidereal</h2>
+			<h2 id="why">Why Sidereal</h2>
 			<ul class="reasons">
 				<li><strong>Free.</strong> Every feature, for personal and business use. There is no paid tier.</li>
 				<li><strong>No account.</strong> Nothing to sign in to.</li>
@@ -132,7 +126,7 @@ const screenshots = [
 		</section>
 
 		<section aria-labelledby="see-it">
-			<h2 id="see-it" data-commit="branch">See it</h2>
+			<h2 id="see-it">See it</h2>
 			<figure class="shot">
 				<button class="zoom" type="button">
 					<img
@@ -160,7 +154,7 @@ const screenshots = [
 		</section>
 
 		<section aria-labelledby="features">
-			<h2 id="features" data-commit="merge">Features</h2>
+			<h2 id="features">Features</h2>
 			<ul class="features">
 				<li>
 					<strong>Commit graph</strong> in an editor tab per repository, or in the bottom panel. Commits stream in as they
@@ -197,7 +191,7 @@ const screenshots = [
 		</section>
 
 		<section aria-labelledby="coming-from" class="columns">
-			<h2 id="coming-from" data-commit="main">Coming from another tool</h2>
+			<h2 id="coming-from">Coming from another tool</h2>
 			<div>
 				<h3>Git Graph</h3>
 				<ul>
@@ -236,7 +230,7 @@ const screenshots = [
 		</section>
 
 		<section aria-labelledby="faq">
-			<h2 id="faq" data-commit="main">Questions</h2>
+			<h2 id="faq">Questions</h2>
 			<dl class="faq">
 				<dt>How do I see a Git graph in VS Code?</dt>
 				<dd>
@@ -262,7 +256,7 @@ const screenshots = [
 
 		<footer>
 			<p class="actions">
-				<a class="button primary" href="vscode:extension/zglass.sidereal" data-commit="head">Install in VS Code</a>
+				<a class="button primary" href="vscode:extension/zglass.sidereal">Install in VS Code</a>
 				<a class="button" href={marketplace}>View on the Marketplace</a>
 			</p>
 			<p class="meta">
@@ -319,84 +313,37 @@ const screenshots = [
 </script>
 
 <style>
-	/* Positioned for the history thread down its left side. */
+	/* The night sky behind the page is dark in both color schemes, so the page is too. */
+	:global(html:root) {
+		color-scheme: dark;
+		--bg: #0a0d16;
+		--surface: #131827;
+		--border: #262c3e;
+		--text: #c3c8d8;
+		--heading: #f2f4fa;
+		--muted: #8f95ab;
+		--link: #9db4ff;
+		--link-hover: #c9d6ff;
+	}
 	main {
-		position: relative;
 		max-width: 56rem;
 		margin: 0 auto;
 		padding: 4rem 1.5rem 5rem;
 	}
-	/* Narrow windows have no margin for the thread, so the sections make room for it. */
-	@media (max-width: 62rem) {
-		main > section,
-		main > footer {
-			padding-left: 1.75rem;
-		}
-	}
 	.home {
 		font-size: 0.9375rem;
 	}
-	/* The header sits in the night sky, dark in both color schemes like the home page's lead card. */
-	.sky-card {
-		position: relative;
-		margin-top: 1.5rem;
-		overflow: hidden;
-		color: var(--hero-text);
-		background: #050813;
-		border: 1px solid var(--hero-border);
-		border-radius: 12px;
-	}
-	.sky-body {
-		position: relative;
+	/* The text, with the place the sky's mark lands beside it, or above it on phones. */
+	.intro {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) 10rem;
 		gap: 2rem;
-		padding: 2.5rem;
-		/* Keeps the text clear of the brighter stars. */
-		background: linear-gradient(90deg, rgb(3 5 12 / 0.6), rgb(3 5 12 / 0) 75%);
+		margin-top: 2rem;
 	}
-	.sky-card .kind {
-		margin-top: 0;
-		color: var(--hero-muted);
-	}
-	.sky-card h1 {
-		color: var(--hero-heading);
-	}
-	.sky-card .meta {
-		color: var(--hero-muted);
-	}
-	.sky-card a {
-		color: var(--hero-link);
-	}
-	.sky-card a:hover {
-		color: var(--hero-link-hover);
-	}
-	.sky-card .button {
-		color: var(--hero-heading);
-		background: rgb(255 255 255 / 0.04);
-		border-color: rgb(255 255 255 / 0.2);
-	}
-	.sky-card .button:hover {
-		color: var(--hero-heading);
-		border-color: var(--hero-link);
-	}
-	.sky-card .button.primary {
-		color: var(--hero-button-text);
-		background: var(--hero-button);
-		border-color: var(--hero-button);
-	}
-	.sky-card .button.primary:hover {
-		color: var(--hero-button-text);
-		background: var(--hero-button-hover);
-		border-color: var(--hero-button-hover);
-	}
-	/* On phones the mark goes above the text. */
 	@media (max-width: 40rem) {
-		.sky-body {
+		.intro {
 			grid-template-columns: minmax(0, 1fr);
 			gap: 0.25rem;
-			padding: 1.5rem;
-			background: linear-gradient(180deg, rgb(3 5 12 / 0) 30%, rgb(3 5 12 / 0.6));
 		}
 		.mark {
 			order: -1;
@@ -404,7 +351,6 @@ const screenshots = [
 		}
 	}
 	.kind {
-		margin-top: 2rem;
 		font-size: 0.8125rem;
 		color: var(--muted);
 	}
@@ -479,9 +425,6 @@ const screenshots = [
 	.zoom:focus-visible {
 		outline: 2px solid var(--link);
 		outline-offset: 2px;
-	}
-	.zoom picture {
-		display: block;
 	}
 	/* Stays above the page until it's back in place. */
 	.zoom img {

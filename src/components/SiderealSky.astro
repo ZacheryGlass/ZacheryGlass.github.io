@@ -1,8 +1,8 @@
 ---
-// The animated night sky behind the Sidereal page's header. Commits light up one by one as stars in a slowly turning
-// sky, then the constellation straightens into the Sidereal mark, landing in the element marked data-sky-mark beside
-// the page's own title. It fills its positioned parent, plays once when it first comes into view and then keeps
-// turning and twinkling. Off screen it pauses; with reduced motion it shows its last frame. The page's h1 carries the
+// The animated night sky behind the Sidereal page. Commits light up one by one as stars in a slowly turning sky, then
+// the constellation straightens into the Sidereal mark, landing in the element marked data-sky-mark beside the page's
+// own title and scrolling away with it. The sky stays fixed behind the page and turns a little as the page scrolls.
+// The intro plays once; with reduced motion the sky shows its last frame and stays still. The page's h1 carries the
 // name for screen readers and search engines, so the canvas is hidden from them.
 ---
 
@@ -40,11 +40,12 @@
 	const SCALE = 0.35;
 	const TAU = Math.PI * 2;
 	const MONO = '"Sidereal Mono", ui-monospace, monospace';
-	/** Type sizes for the star labels and the corner text, in design units. */
+	/** Type size for the star labels, in design units. */
 	const LABEL = 26;
-	const FURNITURE = 31;
 	/** Radians per second: one turn of the sky every 23 minutes or so. */
 	const OMEGA = 0.0045;
+	/** Radians per CSS pixel scrolled. */
+	const SCROLL_TURN = 0.00015;
 	/** Stars per square design unit. */
 	const DENSITY = 2.29e-4;
 	// Sidereal's own lane colors, plus a third for the second branch.
@@ -92,24 +93,6 @@
 	}
 	const GLOW_W = glowSprite([235, 242, 255]);
 	const GLOW_B = glowSprite([150, 185, 255]);
-
-	/** Greenwich mean sidereal time, for the clock in the corner. */
-	function gmst(ms: number) {
-		const days = ms / 86400000 + 2440587.5 - 2451545.0;
-		const hours = (((18.697374558 + 24.06570982441908 * days) % 24) + 24) % 24;
-		const s = Math.floor(hours * 3600);
-		return [Math.floor(s / 3600), Math.floor(s / 60) % 60, s % 60].map((v) => String(v).padStart(2, '0')).join(':');
-	}
-
-	/** Right-aligned text with letter spacing, drawn a character at a time because not every browser supports it. */
-	function tracked(c: CanvasRenderingContext2D, text: string, right: number, y: number, spacing: number) {
-		const widths = [...text].map((ch) => c.measureText(ch).width);
-		let pos = right - (widths.reduce((a, b) => a + b, 0) + spacing * (text.length - 1));
-		[...text].forEach((ch, i) => {
-			c.fillText(ch, pos, y);
-			pos += widths[i] + spacing;
-		});
-	}
 
 	class Scene {
 		W: number;
@@ -264,22 +247,27 @@
 		k = 1;
 		fontsReady = false;
 		reduced = matchMedia('(prefers-reduced-motion: reduce)');
-		visible = false;
 		raf = 0;
 		start: number | null = null;
-		elapsed = 0;
 		last = 0;
+		/** When the page last scrolled, so the sky keeps up with it at full frame rate. */
+		scrolled = 0;
 
 		constructor(root: HTMLElement) {
 			this.root = root;
 			this.cv = root.querySelector('canvas')!;
 			this.c = this.cv.getContext('2d')!;
 			new ResizeObserver(() => this.resize()).observe(root);
-			new IntersectionObserver((entries) => {
-				this.visible = entries.some((e) => e.isIntersecting);
-				this.update();
-			}).observe(root);
 			this.reduced.addEventListener('change', () => this.update());
+			addEventListener(
+				'scroll',
+				() => {
+					this.scrolled = performance.now();
+					// With reduced motion nothing animates, but the mark still follows the title.
+					if (this.reduced.matches && !this.raf) this.raf = requestAnimationFrame(() => this.update());
+				},
+				{ passive: true },
+			);
 			new FontFace('Sidereal Mono', `url(${monoUrl})`)
 				.load()
 				.then((loaded) => document.fonts.add(loaded))
@@ -295,26 +283,16 @@
 			const w = this.root.clientWidth;
 			const h = this.root.clientHeight;
 			if (!w || !h) return;
-			const dpr = Math.min(devicePixelRatio || 1, 2);
+			// It fills the window, so it draws fewer pixels than it could on dense screens.
+			const dpr = Math.min(devicePixelRatio || 1, 1.5);
 			this.cv.width = Math.round(w * dpr);
 			this.cv.height = Math.round(h * dpr);
 			this.k = dpr * SCALE;
 			this.scene = new Scene(w / SCALE, h / SCALE, this.c);
-			// The header only moves its anchor when it reflows, which resizes it too.
-			const box = this.anchor?.getBoundingClientRect();
-			const frame = this.cv.getBoundingClientRect();
-			if (box?.width && box.height) {
-				this.scene.fitMark(
-					(box.left - frame.left) / SCALE,
-					(box.top - frame.top) / SCALE,
-					box.width / SCALE,
-					box.height / SCALE,
-				);
-			}
 			this.update();
 		}
 
-		/** Starts, stops or redraws, depending on visibility, motion preference and fonts. */
+		/** Starts the animation, or with reduced motion draws its last frame. */
 		update() {
 			cancelAnimationFrame(this.raf);
 			this.raf = 0;
@@ -323,26 +301,31 @@
 				this.draw(SETTLED + 0.3, false);
 				return;
 			}
-			if (!this.visible) {
-				if (this.start !== null) this.elapsed = (performance.now() - this.start) / 1000;
-				this.start = null;
-				return;
-			}
 			const frame = (now: number) => {
 				this.raf = requestAnimationFrame(frame);
-				if (this.start === null) this.start = now - this.elapsed * 1000;
+				if (this.start === null) this.start = now;
 				const t = (now - this.start) / 1000;
-				// Once settled, 30 frames a second is plenty for a slow sky.
-				if (t > SETTLED && now - this.last < 32) return;
+				// Once settled, 30 frames a second is plenty for a slow sky, unless the page is scrolling.
+				if (t > SETTLED && now - this.last < 32 && now - this.scrolled > 200) return;
 				this.last = now;
 				this.draw(t, true);
 			};
 			this.raf = requestAnimationFrame(frame);
 		}
 
+		/** Lands the mark on its anchor, which scrolls with the page. */
+		placeMark(s: Scene) {
+			const box = this.anchor?.getBoundingClientRect();
+			const frame = this.cv.getBoundingClientRect();
+			if (box?.width && box.height) {
+				s.fitMark((box.left - frame.left) / SCALE, (box.top - frame.top) / SCALE, box.width / SCALE, box.height / SCALE);
+			}
+		}
+
 		draw(t: number, moving: boolean) {
 			const { c } = this;
 			const s = this.scene!;
+			this.placeMark(s);
 			c.setTransform(1, 0, 0, 1, 0, 0);
 			c.clearRect(0, 0, this.cv.width, this.cv.height);
 			// Draw in design units from here on.
@@ -351,7 +334,6 @@
 			c.globalCompositeOperation = 'source-over';
 			this.drawSky(s, t, moving);
 			this.drawGraph(s, t);
-			this.drawFurniture(s, t);
 			const { W, H } = s;
 			const vg = c.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, Math.max(W, H) * 0.66);
 			vg.addColorStop(0, 'rgba(0,0,0,0)');
@@ -387,7 +369,7 @@
 			c.fillRect(0, 0, W, H);
 			c.drawImage(s.nebula, 0, 0, W, H);
 
-			const rot = OMEGA * t;
+			const rot = OMEGA * t + (moving ? scrollY * SCROLL_TURN : 0);
 			// Right ascension spokes and declination circles around the pole, turning with the stars.
 			const gridAlpha = 0.06 * prog(t, 0.3, 1.6) * lerp(1, 0.55, prog(t, 4.2, 5.6));
 			if (gridAlpha > 0) {
@@ -535,32 +517,17 @@
 			}
 			c.restore();
 		}
-
-		/** A sidereal clock and a running count in the right-hand corners, clear of the text, when there's room. */
-		drawFurniture(s: Scene, t: number) {
-			if (s.W < s.H) return;
-			const a = 0.5 * prog(t, 0.6, 1.8);
-			if (a <= 0) return;
-			const { c } = this;
-			c.font = `400 ${FURNITURE}px ${MONO}`;
-			c.fillStyle = `rgba(160,182,228,${a})`;
-			const lit = s.nodes.filter((n) => t >= litAt(n));
-			const branches = new Set(lit.map((n) => n.lane)).size;
-			const label = `${lit.length} COMMIT${lit.length === 1 ? '' : 'S'} · ${branches} BRANCH${branches === 1 ? '' : 'ES'}`;
-			const m = 46;
-			tracked(c, `GMST ${gmst(Date.now())}`, s.W - m, m + FURNITURE * 0.8, 3);
-			tracked(c, label, s.W - m, s.H - m, 3);
-		}
 	}
 
 	document.querySelectorAll<HTMLElement>('.sky').forEach((root) => new Sky(root));
 </script>
 
 <style>
-	/* Fills the header it sits in, behind the header's text. */
+	/* Fixed behind the page's content, above the page's own background. */
 	.sky {
-		position: absolute;
+		position: fixed;
 		inset: 0;
+		z-index: -1;
 		overflow: hidden;
 		background: #050813;
 	}
