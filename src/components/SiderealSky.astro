@@ -4,6 +4,10 @@
 // own title and scrolling away with it. The sky stays fixed behind the page, turning slowly on its own.
 // The intro plays once; with reduced motion the sky shows its last frame and stays still. The page's h1 carries the
 // name for screen readers and search engines, so the canvas is hidden from them.
+//
+// The home page's peel (PagePeel) shows this page in a frame as it curls away, then navigates here. The framed copy
+// stays dark, the color the intro starts from, and the page the peel lands on waits a second before its intro, so the
+// intro plays once, after the peel.
 ---
 
 <div class="sky">
@@ -53,6 +57,8 @@
 	const SNAP = [3.85, 5.1];
 	/** After this, nothing but the sky changes. */
 	const SETTLED = 5.6;
+	/** How long the sky waits before its intro on the page a peel lands on, in milliseconds. */
+	const PEEL_DELAY = 1000;
 
 	const clamp = (x: number, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 	const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -91,6 +97,17 @@
 	}
 	const GLOW_W = glowSprite([235, 242, 255]);
 	const GLOW_B = glowSprite([150, 185, 255]);
+
+	/** Whether a peel just navigated here: it notes where it went in session storage. Reading the note clears it. */
+	function arrivedByPeel() {
+		try {
+			const peeled = sessionStorage.getItem('peeled');
+			sessionStorage.removeItem('peeled');
+			return peeled !== null && new URL(peeled).pathname === location.pathname;
+		} catch {
+			return false;
+		}
+	}
 
 	class Scene {
 		W: number;
@@ -250,6 +267,8 @@
 		last = 0;
 		/** When the page last scrolled, so the sky keeps up with it at full frame rate. */
 		scrolled = 0;
+		/** How long to wait before the intro, in milliseconds. */
+		delay = arrivedByPeel() ? PEEL_DELAY : 0;
 
 		constructor(root: HTMLElement) {
 			this.root = root;
@@ -301,8 +320,10 @@
 			}
 			const frame = (now: number) => {
 				this.raf = requestAnimationFrame(frame);
-				if (this.start === null) this.start = now;
+				if (this.start === null) this.start = now + this.delay;
 				const t = (now - this.start) / 1000;
+				// Until the intro starts, the canvas stays empty and the sky's own background shows.
+				if (t < 0) return;
 				// Once settled, 30 frames a second is plenty for a slow sky, unless the page is scrolling.
 				if (t > SETTLED && now - this.last < 32 && now - this.scrolled > 200) return;
 				this.last = now;
@@ -517,7 +538,8 @@
 		}
 	}
 
-	document.querySelectorAll<HTMLElement>('.sky').forEach((root) => new Sky(root));
+	// In a frame, as the home page's peel shows this page, the sky stays dark until the page itself loads.
+	if (window.top === window) document.querySelectorAll<HTMLElement>('.sky').forEach((root) => new Sky(root));
 </script>
 
 <style>
@@ -527,7 +549,8 @@
 		inset: 0;
 		z-index: -1;
 		overflow: hidden;
-		background: #050813;
+		/* The color the intro starts from, so the sky looks the same before its first frame. */
+		background: #03050c;
 	}
 	canvas {
 		display: block;

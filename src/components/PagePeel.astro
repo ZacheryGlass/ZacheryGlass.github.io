@@ -116,8 +116,17 @@
 				: 'polygon(0 0, 0 0, 0 0)';
 			shading.setAttribute('points', points(open));
 			flap.setAttribute('points', points(back));
-			if (t < 1) requestAnimationFrame(frameStep);
-			else location.assign(link.href);
+			if (t < 1) {
+				requestAnimationFrame(frameStep);
+				return;
+			}
+			// Tells the page it lands on that a peel brought it there (the Sidereal page holds its intro until then).
+			try {
+				sessionStorage.setItem('peeled', link.href);
+			} catch {
+				// Without storage the page just doesn't know.
+			}
+			location.assign(link.href);
 		};
 		requestAnimationFrame(frameStep);
 	}
