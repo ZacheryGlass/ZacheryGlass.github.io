@@ -144,6 +144,22 @@ const screenshots = [
 				</button>
 				<figcaption>Opening the graph, scrolling the history, and opening a commit's diff.</figcaption>
 			</figure>
+			<figure class="shot">
+				<button class="zoom" type="button">
+					<img
+						src={`${media}/drag/rebase-branch.gif`}
+						width="1400"
+						height="700"
+						loading="lazy"
+						alt="A branch label dragged onto main, previewing the rebase before it runs"
+					/>
+				</button>
+				<figcaption>
+					Drag a branch onto another to rebase it, previewed before you drop. More in the <a
+						href={`${repo}/blob/main/docs/drag-and-drop.md`}>drag and drop guide</a
+					>.
+				</figcaption>
+			</figure>
 			<div class="shots">
 				{
 					screenshots.map((shot) => (
