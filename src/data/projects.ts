@@ -34,13 +34,13 @@ export interface Project {
 export const projects: Project[] = [
 	{
 		name: 'Sidereal',
-		kind: 'VS Code extension and desktop app',
+		kind: 'Desktop app and VS Code extension',
 		description:
-			"A free Git graph, log and file history in the style of TortoiseGit's log view, for VS Code or as a standalone app. Branches, tags, stashes, worktrees and submodules in one view, with checkout, merge, rebase and cherry-pick run from the graph. No account, no ads, no telemetry.",
+			"A free Git graph, log and file history in the style of TortoiseGit's log view, as a desktop app for macOS, Windows and Linux or in VS Code. Branches, tags, stashes, worktrees and submodules in one view, with checkout, merge, rebase and cherry-pick run from the graph. No account, no ads, no telemetry.",
 		links: [
-			{ label: 'Marketplace', href: 'https://marketplace.visualstudio.com/items?itemName=zglass.sidereal' },
 			{ label: 'Download', href: 'https://github.com/ZacheryGlass/sidereal/releases/latest' },
 			{ label: 'Overview', href: '/sidereal/' },
+			{ label: 'Marketplace', href: 'https://marketplace.visualstudio.com/items?itemName=zglass.sidereal' },
 			{ label: 'GitHub', href: 'https://github.com/ZacheryGlass/sidereal' },
 		],
 		featured: 'hero',
