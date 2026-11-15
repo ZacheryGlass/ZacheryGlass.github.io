@@ -1,6 +1,7 @@
 // Sidereal's tutorial videos, listed on /sidereal/tutorials/, newest first. A video's files are in
 // public/sidereal/tutorials: <slug>.mp4, and <slug>.jpg, the frame shown before it plays. They are recorded from the
-// app by marketing/tools/capture/tutorial-videos.mjs in Sidereal's source repository, which writes both files.
+// app, with a voice saying what the captions say, by marketing/tools/capture/tutorial-videos.mjs in Sidereal's source
+// repository, which writes both files.
 
 export interface Tutorial {
 	/** Names the video's files, and its place on the page (/sidereal/tutorials/#slug). */
@@ -21,7 +22,7 @@ export const tutorials: Tutorial[] = [
 		slug: 'hunk-staging',
 		title: 'Staging one hunk at a time',
 		description: 'In the desktop app, stage one hunk of a file at a time, leaving its other changes for a later commit.',
-		seconds: 78,
+		seconds: 109,
 		width: 1920,
 		height: 1200,
 		date: new Date('2026-11-15'),
