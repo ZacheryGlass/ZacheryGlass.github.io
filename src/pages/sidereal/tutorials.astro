@@ -1,0 +1,125 @@
+---
+// Sidereal's tutorial videos (src/data/tutorials.ts), each on the page under its own address: /sidereal/tutorials/#slug.
+import Base from '../../layouts/Base.astro';
+import { formatDate, person } from '../../data/site';
+import { formatLength, tutorials } from '../../data/tutorials';
+
+const title = 'Sidereal tutorials';
+const description = "Short videos of Sidereal's desktop app, one feature at a time.";
+const file = (slug: string, extension: string) => new URL(`/sidereal/tutorials/${slug}.${extension}`, Astro.site).href;
+
+const structuredData = {
+	'@context': 'https://schema.org',
+	'@type': 'ItemList',
+	name: title,
+	itemListElement: tutorials.map((tutorial, index) => ({
+		'@type': 'ListItem',
+		position: index + 1,
+		item: {
+			'@type': 'VideoObject',
+			name: tutorial.title,
+			description: tutorial.description,
+			thumbnailUrl: file(tutorial.slug, 'jpg'),
+			contentUrl: file(tutorial.slug, 'mp4'),
+			uploadDate: tutorial.date.toISOString().slice(0, 10),
+			duration: `PT${Math.floor(tutorial.seconds / 60)}M${tutorial.seconds % 60}S`,
+			author: person,
+		},
+	})),
+};
+---
+
+<Base title={title} description={description} structuredData={structuredData}>
+	<main>
+		<header>
+			<p class="home"><a href="/sidereal/">Sidereal</a></p>
+			<h1>Tutorials</h1>
+			<p class="lead">{description}</p>
+		</header>
+		{
+			tutorials.map((tutorial) => (
+				<section id={tutorial.slug} aria-labelledby={`${tutorial.slug}-title`}>
+					<h2 id={`${tutorial.slug}-title`}>{tutorial.title}</h2>
+					<p class="about">{tutorial.description}</p>
+					<video
+						controls
+						preload="metadata"
+						playsinline
+						width={tutorial.width}
+						height={tutorial.height}
+						poster={`/sidereal/tutorials/${tutorial.slug}.jpg`}
+					>
+						<source src={`/sidereal/tutorials/${tutorial.slug}.mp4`} type="video/mp4" />
+						<a href={`/sidereal/tutorials/${tutorial.slug}.mp4`}>Download the video</a>
+					</video>
+					<p class="meta">
+						{formatLength(tutorial.seconds)} · {formatDate(tutorial.date)}
+					</p>
+				</section>
+			))
+		}
+	</main>
+</Base>
+
+<style>
+	/* Dark in both color schemes, as the Sidereal page is. */
+	:global(html:root) {
+		color-scheme: dark;
+		--bg: #0a0d16;
+		--surface: #131827;
+		--border: #262c3e;
+		--text: #c3c8d8;
+		--heading: #f2f4fa;
+		--muted: #8f95ab;
+		--link: #9db4ff;
+		--link-hover: #c9d6ff;
+	}
+	main {
+		max-width: 56rem;
+		margin: 0 auto;
+		padding: 4rem 1.5rem 5rem;
+	}
+	.home {
+		font-size: 0.9375rem;
+	}
+	h1 {
+		margin-top: 2rem;
+		font-family: var(--font-display);
+		font-size: 2rem;
+		font-weight: 700;
+		line-height: 1.2;
+		color: var(--heading);
+		letter-spacing: -0.015em;
+	}
+	.lead {
+		margin-top: 0.75rem;
+		max-width: 42rem;
+		font-size: 1.125rem;
+	}
+	section {
+		margin-top: 3rem;
+	}
+	h2 {
+		font-size: 1.25rem;
+		font-weight: 600;
+		color: var(--heading);
+	}
+	.about {
+		margin-top: 0.5rem;
+		max-width: 44rem;
+	}
+	video {
+		display: block;
+		width: 100%;
+		height: auto;
+		margin-top: 1rem;
+		border: 1px solid var(--border);
+		border-radius: 8px;
+		background: var(--surface);
+	}
+	.meta {
+		margin-top: 0.5rem;
+		font-size: 0.875rem;
+		color: var(--muted);
+	}
+</style>
