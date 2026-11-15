@@ -22,7 +22,7 @@ export const tutorials: Tutorial[] = [
 		slug: 'hunk-staging',
 		title: 'Staging one hunk at a time',
 		description: 'In the desktop app, stage one hunk of a file at a time, leaving its other changes for a later commit.',
-		seconds: 109,
+		seconds: 104,
 		width: 1920,
 		height: 1200,
 		date: new Date('2026-11-15'),
