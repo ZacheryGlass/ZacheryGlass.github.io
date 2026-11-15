@@ -1,5 +1,6 @@
 ---
-// Sidereal's tutorial videos (src/data/tutorials.ts), each on the page under its own address: /sidereal/tutorials/#slug.
+// Sidereal's tutorial videos (src/data/tutorials.ts), in the order to watch them, each on the page under its own address:
+// /sidereal/tutorials/#slug. A list at the top links to each.
 import Base from '../../layouts/Base.astro';
 import { formatDate, person } from '../../data/site';
 import { formatLength, tutorials } from '../../data/tutorials';
@@ -35,6 +36,15 @@ const structuredData = {
 			<p class="home"><a href="/sidereal/">Sidereal</a></p>
 			<h1>Tutorials</h1>
 			<p class="lead">{description}</p>
+			<ol class="contents">
+				{
+					tutorials.map((tutorial) => (
+						<li>
+							<a href={`#${tutorial.slug}`}>{tutorial.title}</a> <span class="length">{formatLength(tutorial.seconds)}</span>
+						</li>
+					))
+				}
+			</ol>
 		</header>
 		{
 			tutorials.map((tutorial) => (
@@ -96,8 +106,21 @@ const structuredData = {
 		max-width: 42rem;
 		font-size: 1.125rem;
 	}
+	.contents {
+		margin-top: 1.25rem;
+		padding-left: 1.5rem;
+	}
+	.contents li + li {
+		margin-top: 0.25rem;
+	}
+	.length {
+		margin-left: 0.375rem;
+		font-size: 0.875rem;
+		color: var(--muted);
+	}
 	section {
 		margin-top: 3rem;
+		scroll-margin-top: 1.5rem;
 	}
 	h2 {
 		font-size: 1.25rem;
