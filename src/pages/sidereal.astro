@@ -3,6 +3,7 @@
 // so new screenshots show up here without a change. If GitHub Pages is turned on for that repository, its site
 // takes over this /sidereal/ path.
 import Base from '../layouts/Base.astro';
+import SiderealNav from '../components/SiderealNav.astro';
 import SiderealSky from '../components/SiderealSky.astro';
 import { latestRelease } from '../data/github';
 import { formatDate, person } from '../data/site';
@@ -70,9 +71,9 @@ const screenshots = [
 	}}
 >
 	<SiderealSky />
+	<SiderealNav current="overview" />
 	<main>
 		<header>
-			<p class="home"><a href="/">Zachery Glass</a></p>
 			<div class="intro">
 				<div>
 					<p class="kind">Desktop app and VS Code extension</p>
@@ -226,8 +227,13 @@ const screenshots = [
 				{
 					tutorials.map((tutorial) => (
 						<li>
-							<a href={`/sidereal/tutorials/#${tutorial.slug}`}>{tutorial.title}</a>{' '}
-							<span class="length">{formatLength(tutorial.seconds)}</span>
+							<a href={`/sidereal/tutorials/#${tutorial.slug}`}>
+								<svg class="play" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+									<path d="M4.5 2.6v10.8a.6.6 0 0 0 .92.5l8.3-5.4a.6.6 0 0 0 0-1L5.42 2.1a.6.6 0 0 0-.92.5z" />
+								</svg>
+								<span class="title">{tutorial.title}</span>
+								<span class="length">{formatLength(tutorial.seconds)}</span>
+							</a>
 						</li>
 					))
 				}
@@ -432,17 +438,13 @@ const screenshots = [
 	main {
 		max-width: 56rem;
 		margin: 0 auto;
-		padding: 4rem 1.5rem 5rem;
-	}
-	.home {
-		font-size: 0.9375rem;
+		padding: 3rem 1.5rem 5rem;
 	}
 	/* The text, with the place the sky's mark lands beside it, or above it on phones. */
 	.intro {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) 10rem;
 		gap: 2rem;
-		margin-top: 2rem;
 	}
 	@media (max-width: 40rem) {
 		.intro {
@@ -571,12 +573,20 @@ const screenshots = [
 	section {
 		margin-top: 3.5rem;
 	}
+	/* A section's heading is what a link jumps to: it shows below the bar that stays at the window's top. */
 	h2 {
+		scroll-margin-top: 5rem;
 		font-size: 0.8125rem;
 		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
 		color: var(--muted);
+	}
+	/* On a phone the bar is two rows tall. */
+	@media (max-width: 44rem) {
+		h2 {
+			scroll-margin-top: 7rem;
+		}
 	}
 	h3 {
 		font-size: 1.0625rem;
@@ -611,16 +621,44 @@ const screenshots = [
 	.prose p + p {
 		margin-top: 0.75rem;
 	}
+	/* Each tutorial is a row to press, as wide as its column: a line of text among the page's is easy to miss. */
 	.tutorials {
-		margin-top: 0.75rem;
-		max-width: 44rem;
-		padding-left: 1.5rem;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+		gap: 0.625rem;
+		margin-top: 1rem;
+		padding-left: 0;
+		list-style: none;
 	}
 	.tutorials li + li {
-		margin-top: 0.25rem;
+		margin-top: 0;
+	}
+	.tutorials a {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		height: 100%;
+		padding: 0.75rem 1rem;
+		text-decoration: none;
+		border: 1px solid var(--border);
+		border-radius: 8px;
+		background: color-mix(in srgb, var(--surface) 80%, transparent);
+		color: var(--heading);
+	}
+	.tutorials a:hover {
+		border-color: var(--link);
+		background: color-mix(in srgb, var(--link) 10%, var(--surface));
+	}
+	.play {
+		flex: none;
+		fill: var(--link);
+	}
+	.title {
+		font-weight: 600;
 	}
 	.length {
-		margin-left: 0.25rem;
+		margin-left: auto;
+		padding-left: 0.5rem;
 		font-size: 0.875rem;
 		color: var(--muted);
 		white-space: nowrap;

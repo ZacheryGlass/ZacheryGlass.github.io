@@ -1,0 +1,147 @@
+---
+// The bar at the top of Sidereal's pages: the way back to the site, Sidereal's pages and its repository, and the
+// download. It stays at the top of the window as the page scrolls, so the pages are in reach from anywhere on one.
+interface Props {
+	/** The page the bar is on, which it marks. */
+	current: 'overview' | 'tutorials';
+}
+
+const { current } = Astro.props;
+const repo = 'https://github.com/ZacheryGlass/sidereal';
+const links: { label: string; href: string; page?: Props['current'] }[] = [
+	{ label: 'Overview', href: '/sidereal/', page: 'overview' },
+	{ label: 'Tutorials', href: '/sidereal/tutorials/', page: 'tutorials' },
+	{ label: 'Changelog', href: `${repo}/blob/main/CHANGELOG.md` },
+	{ label: 'GitHub', href: repo },
+];
+---
+
+<nav class="bar" aria-label="Sidereal">
+	<div class="inner">
+		<p class="trail">
+			<a class="site" href="/">Zachery Glass</a>
+			<span aria-hidden="true">/</span>
+			<a class="brand" href="/sidereal/">Sidereal</a>
+		</p>
+		<ul>
+			{
+				links.map((link) => (
+					<li>
+						<a href={link.href} aria-current={link.page === current ? 'page' : undefined}>
+							{link.label}
+						</a>
+					</li>
+				))
+			}
+		</ul>
+		<a class="download" href={`${repo}/releases/latest`}>Download</a>
+	</div>
+</nav>
+
+<style>
+	/* Below the overlay a zoomed screenshot opens (z-index 10), above the page. */
+	.bar {
+		position: sticky;
+		top: 0;
+		z-index: 5;
+		border-bottom: 1px solid var(--border);
+		background: color-mix(in srgb, var(--bg) 82%, transparent);
+		-webkit-backdrop-filter: blur(10px);
+		backdrop-filter: blur(10px);
+	}
+	.inner {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0 1.5rem;
+		max-width: 56rem;
+		min-height: 3.5rem;
+		margin: 0 auto;
+		padding: 0 1.5rem;
+	}
+	.trail {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-right: auto;
+		font-size: 0.9375rem;
+		color: var(--muted);
+	}
+	.trail a {
+		text-decoration: none;
+	}
+	.site {
+		color: var(--muted);
+	}
+	.site:hover {
+		color: var(--heading);
+	}
+	.brand {
+		font-family: var(--font-display);
+		font-size: 1.0625rem;
+		font-weight: 700;
+		color: var(--heading);
+	}
+	ul {
+		display: flex;
+		align-items: stretch;
+		gap: 0.25rem;
+		list-style: none;
+	}
+	li a {
+		display: flex;
+		align-items: center;
+		height: 3.5rem;
+		padding: 0 0.75rem;
+		font-size: 0.9375rem;
+		font-weight: 600;
+		text-decoration: none;
+		color: var(--text);
+		/* The line that marks the page the bar is on, over the bar's own border. */
+		border-bottom: 2px solid transparent;
+		margin-bottom: -1px;
+	}
+	li a:hover {
+		color: var(--heading);
+		border-bottom-color: color-mix(in srgb, var(--link) 45%, transparent);
+	}
+	li a[aria-current='page'] {
+		color: var(--heading);
+		border-bottom-color: var(--link);
+	}
+	.download {
+		padding: 0.4rem 0.875rem;
+		font-size: 0.875rem;
+		font-weight: 600;
+		text-decoration: none;
+		border-radius: 6px;
+		background: var(--link);
+		color: var(--bg);
+	}
+	.download:hover {
+		background: var(--link-hover);
+		color: var(--bg);
+	}
+	/* On a phone: the trail and the download on one row, the pages on a row of their own below, which scrolls sideways
+	   on the narrowest screens. */
+	@media (max-width: 44rem) {
+		.inner {
+			padding-top: 0.625rem;
+		}
+		ul {
+			order: 1;
+			width: calc(100% + 1rem);
+			margin: 0.25rem -0.5rem 0;
+			gap: 0;
+			justify-content: space-between;
+			overflow-x: auto;
+			scrollbar-width: none;
+		}
+		li a {
+			height: 2.5rem;
+			padding: 0 0.5rem;
+			font-size: 0.875rem;
+			white-space: nowrap;
+		}
+	}
+</style>

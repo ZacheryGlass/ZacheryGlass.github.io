@@ -1,6 +1,7 @@
 ---
 // Sidereal's tutorial videos (src/data/tutorials.ts), in the order to watch them, each on the page under its own address:
 // /sidereal/tutorials/#slug. A list at the top links to each.
+import SiderealNav from '../../components/SiderealNav.astro';
 import Base from '../../layouts/Base.astro';
 import { formatDate, person } from '../../data/site';
 import { formatLength, tutorials } from '../../data/tutorials';
@@ -31,9 +32,9 @@ const structuredData = {
 ---
 
 <Base title={title} description={description} structuredData={structuredData}>
+	<SiderealNav current="tutorials" />
 	<main>
 		<header>
-			<p class="home"><a href="/sidereal/">Sidereal</a></p>
 			<h1>Tutorials</h1>
 			<p class="lead">{description}</p>
 			<ol class="contents">
@@ -87,13 +88,9 @@ const structuredData = {
 	main {
 		max-width: 56rem;
 		margin: 0 auto;
-		padding: 4rem 1.5rem 5rem;
-	}
-	.home {
-		font-size: 0.9375rem;
+		padding: 3rem 1.5rem 5rem;
 	}
 	h1 {
-		margin-top: 2rem;
 		font-family: var(--font-display);
 		font-size: 2rem;
 		font-weight: 700;
@@ -119,9 +116,16 @@ const structuredData = {
 		color: var(--muted);
 		white-space: nowrap;
 	}
+	/* A tutorial jumped to shows below the bar that stays at the window's top. */
 	section {
 		margin-top: 3rem;
-		scroll-margin-top: 1.5rem;
+		scroll-margin-top: 5rem;
+	}
+	/* On a phone the bar is two rows tall. */
+	@media (max-width: 44rem) {
+		section {
+			scroll-margin-top: 7rem;
+		}
 	}
 	h2 {
 		font-size: 1.25rem;
