@@ -6,6 +6,7 @@ import Base from '../layouts/Base.astro';
 import SiderealSky from '../components/SiderealSky.astro';
 import { latestRelease } from '../data/github';
 import { formatDate, person } from '../data/site';
+import { formatLength, tutorials } from '../data/tutorials';
 
 const name = 'Sidereal: Git Graph, Log & Worktrees';
 const description =
@@ -214,6 +215,23 @@ const screenshots = [
 					))
 				}
 			</div>
+		</section>
+
+		<section aria-labelledby="tutorials">
+			<h2 id="tutorials">Tutorials</h2>
+			<p class="prose">
+				<a href="/sidereal/tutorials/">Short videos</a> of the desktop app, one feature at a time.
+			</p>
+			<ol class="tutorials">
+				{
+					tutorials.map((tutorial) => (
+						<li>
+							<a href={`/sidereal/tutorials/#${tutorial.slug}`}>{tutorial.title}</a>{' '}
+							<span class="length">{formatLength(tutorial.seconds)}</span>
+						</li>
+					))
+				}
+			</ol>
 		</section>
 
 		<section aria-labelledby="features">
@@ -592,6 +610,20 @@ const screenshots = [
 	}
 	.prose p + p {
 		margin-top: 0.75rem;
+	}
+	.tutorials {
+		margin-top: 0.75rem;
+		max-width: 44rem;
+		padding-left: 1.5rem;
+	}
+	.tutorials li + li {
+		margin-top: 0.25rem;
+	}
+	.length {
+		margin-left: 0.25rem;
+		font-size: 0.875rem;
+		color: var(--muted);
+		white-space: nowrap;
 	}
 	.shot {
 		margin-top: 1rem;
