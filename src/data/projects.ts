@@ -71,12 +71,6 @@ export const projects: Project[] = [
 		links: [{ label: 'GitHub', href: 'https://github.com/ZacheryGlass/.claude' }],
 	},
 	{
-		name: 'agent-sync',
-		kind: 'Developer tool',
-		description: 'Keeps agents, settings and preferences in sync across AI assistants.',
-		links: [{ label: 'GitHub', href: 'https://github.com/ZacheryGlass/agent-sync' }],
-	},
-	{
 		name: 'BindKit',
 		kind: 'Windows app',
 		description: 'A system tray app that finds standalone Python scripts and runs them from a menu.',
@@ -92,12 +86,6 @@ export const projects: Project[] = [
 		kind: 'Windows app',
 		description: 'A system tray app that shows how far through the month you should be with your GitHub Copilot quota.',
 		links: [{ label: 'GitHub', href: 'https://github.com/ZacheryGlass/copilot-quota-tray' }],
-	},
-	{
-		name: 'personal-context-builder',
-		kind: 'Script',
-		description: 'Downloads and archives your Reddit history so AI assistants can use it as personal context.',
-		links: [{ label: 'GitHub', href: 'https://github.com/ZacheryGlass/personal-context-builder' }],
 	},
 ];
 
