@@ -11,7 +11,7 @@ export const person = {
 	'@type': 'Person',
 	name: 'Zachery Glass',
 	url: 'https://zacheryglass.com/',
-	sameAs: ['https://github.com/ZacheryGlass'],
+	sameAs: ['https://github.com/ZacheryGlass', 'https://www.linkedin.com/in/zacheryglass/'],
 };
 
 const dateFormat = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
