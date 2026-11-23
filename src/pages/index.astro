@@ -22,7 +22,6 @@ const more = projects.filter((project) => !project.featured);
 const links = [
 	{ name: 'LinkedIn', href: 'https://www.linkedin.com/in/zacheryglass/' },
 	{ name: 'GitHub', href: 'https://github.com/ZacheryGlass' },
-	{ name: 'RSS feed', href: '/rss.xml' },
 ];
 
 const posts = await getPosts();
@@ -93,9 +92,6 @@ const structuredData = { '@context': 'https://schema.org', ...person, descriptio
 							</li>
 						))}
 					</ul>
-					<p class="feed">
-						<a href="/rss.xml">RSS feed</a>
-					</p>
 				</section>
 			)
 		}
@@ -208,9 +204,5 @@ const structuredData = { '@context': 'https://schema.org', ...person, descriptio
 		margin-top: 0.75rem;
 		max-width: 44rem;
 		line-height: 1.6;
-	}
-	.feed {
-		margin-top: 1.5rem;
-		font-weight: 500;
 	}
 </style>
