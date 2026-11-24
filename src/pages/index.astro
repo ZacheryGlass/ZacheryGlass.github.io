@@ -5,8 +5,7 @@ import PagePeel from '../components/PagePeel.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import { linkPeel, peelAttrs, projects } from '../data/projects';
 import { latestRelease, repoCounts } from '../data/github';
-import { getPosts } from '../data/writing';
-import { description, formatDate, person } from '../data/site';
+import { description, person } from '../data/site';
 
 const featured = await Promise.all(
 	projects
@@ -24,7 +23,6 @@ const links = [
 	{ name: 'GitHub', href: 'https://github.com/ZacheryGlass' },
 ];
 
-const posts = await getPosts();
 const structuredData = { '@context': 'https://schema.org', ...person, description };
 ---
 
@@ -49,17 +47,6 @@ const structuredData = { '@context': 'https://schema.org', ...person, descriptio
 			</ul>
 		</section>
 
-		<section aria-labelledby="work">
-			<h2 id="work">Work</h2>
-			<p class="work">
-				At Garmin I split my time between aviation graphics and AI enablement. I'm one of three aviation engineers tapped to
-				help stand up the team that brings AI tools and training to engineers across the company, and I built the company's
-				first internal MCP server and its first AI plugin marketplace, which has more than 600 users. The graphics work is
-				what I've done for eight years: embedded GPU drivers and the OpenGL libraries built on them for Garmin's aviation
-				displays.
-			</p>
-		</section>
-
 		<section aria-labelledby="side-projects">
 			<h2 id="side-projects">Side projects</h2>
 			<ul class="featured">
@@ -73,28 +60,6 @@ const structuredData = { '@context': 'https://schema.org', ...person, descriptio
 				{more.map((project) => <ProjectCard project={project} />)}
 			</ul>
 		</section>
-
-		{
-			posts.length > 0 && (
-				<section aria-labelledby="writing">
-					<h2 id="writing">Writing</h2>
-					<ul class="posts">
-						{posts.map((post) => (
-							<li class="post peel-card">
-								<p class="date">
-									<time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
-									{post.data.draft && ' · Draft'}
-								</p>
-								<h3>
-									<a href={`/writing/${post.id}/`} data-peel="var(--bg)">{post.data.title}</a>
-								</h3>
-								<p class="standfirst">{post.data.description}</p>
-							</li>
-						))}
-					</ul>
-				</section>
-			)
-		}
 	</main>
 	<PagePeel />
 </Base>
@@ -147,62 +112,5 @@ const structuredData = { '@context': 'https://schema.org', ...person, descriptio
 		gap: 0.5rem 1.5rem;
 		margin-top: 1.1875rem;
 		font-weight: 500;
-	}
-	.work {
-		margin-top: 1.1875rem;
-		max-width: 44rem;
-		line-height: 1.6;
-	}
-	.posts {
-		display: grid;
-		gap: 1.25rem;
-		margin-top: 1.1875rem;
-	}
-	.post {
-		position: relative;
-		padding: 2rem;
-		background: var(--surface);
-		border-radius: 16px;
-	}
-	.post .date {
-		font-size: 0.875rem;
-		font-weight: 500;
-		line-height: 1.3;
-		color: var(--muted);
-	}
-	.post h3 {
-		margin-top: 0.75rem;
-		font-family: var(--font-display);
-		font-size: 1.75rem;
-		font-weight: 700;
-		line-height: 1.2;
-		letter-spacing: -0.02em;
-	}
-	/* The whole card is the link. */
-	.post h3 a {
-		color: var(--heading);
-		text-decoration: none;
-	}
-	.post h3 a::after {
-		content: '';
-		position: absolute;
-		inset: 0;
-		border-radius: 16px;
-	}
-	.post h3 a:focus-visible {
-		outline: none;
-	}
-	/* On the card, which clips what's inside it to draw the peel's curled corner. */
-	.post:has(h3 a:focus-visible) {
-		outline: 2px solid var(--link);
-		outline-offset: 2px;
-	}
-	.post:hover h3 a {
-		color: var(--link);
-	}
-	.standfirst {
-		margin-top: 0.75rem;
-		max-width: 44rem;
-		line-height: 1.6;
 	}
 </style>
