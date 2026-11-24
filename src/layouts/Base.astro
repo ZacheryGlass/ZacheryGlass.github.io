@@ -5,14 +5,13 @@ import { bio } from '../data/site';
 interface Props {
 	title: string;
 	description: string;
-	type?: 'website' | 'article';
 	/** Share image; the site's card when omitted. */
 	image?: { src: string; width: number; height: number; alt: string };
 	/** Schema.org data for search engines, written as JSON-LD. */
 	structuredData?: Record<string, unknown>;
 }
 
-const { title, description, type = 'website', structuredData } = Astro.props;
+const { title, description, structuredData } = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const image = Astro.props.image ?? {
 	src: new URL('/og.png', Astro.site).href,
@@ -33,7 +32,7 @@ const jsonLd = structuredData && JSON.stringify(structuredData).replace(/</g, '\
 		<meta name="description" content={description} />
 		<link rel="canonical" href={canonical} />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta property="og:type" content={type} />
+		<meta property="og:type" content="website" />
 		<meta property="og:site_name" content="Zachery Glass" />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />

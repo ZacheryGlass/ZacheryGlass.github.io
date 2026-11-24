@@ -4,10 +4,6 @@ import { defineConfig, fontProviders } from 'astro/config';
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://zacheryglass.com',
-	markdown: {
-		// Both themes are emitted as CSS variables; the post page picks one by prefers-color-scheme.
-		shikiConfig: { themes: { light: 'github-light', dark: 'github-dark' }, defaultColor: false },
-	},
 	// Downloaded at build time and served from this site. The optical size axis is kept so large text gets the
 	// tighter display cuts.
 	fonts: [
