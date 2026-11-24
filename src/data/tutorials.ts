@@ -67,7 +67,7 @@ export const tutorials: Tutorial[] = [
 		slug: 'submodule-state',
 		title: 'When a submodule is out of step',
 		description: 'What the desktop app shows when a submodule is on another commit than its repository records, or has changes of its own, and how to put it right.',
-		seconds: 90,
+		seconds: 91,
 		width: 1920,
 		height: 1200,
 		date: new Date('2026-11-23'),
