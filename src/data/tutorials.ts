@@ -63,6 +63,15 @@ export const tutorials: Tutorial[] = [
 		height: 1200,
 		date: new Date('2026-11-15'),
 	},
+	{
+		slug: 'submodule-state',
+		title: 'When a submodule is out of step',
+		description: 'What the desktop app shows when a submodule is on another commit than its repository records, or has changes of its own, and how to put it right.',
+		seconds: 90,
+		width: 1920,
+		height: 1200,
+		date: new Date('2026-11-23'),
+	},
 ];
 
 /** "1 min 18 s" */
