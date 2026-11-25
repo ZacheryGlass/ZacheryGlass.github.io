@@ -46,6 +46,15 @@ export const tutorials: Tutorial[] = [
 		date: new Date('2026-11-15'),
 	},
 	{
+		slug: 'edit-commit-message',
+		title: "Editing a commit's message",
+		description: "Fix the message of a commit you haven't pushed, even with more commits on top of it: no rebase to step through, and the commits on top keep their changes and authors under new SHA-1s.",
+		seconds: 72,
+		width: 1920,
+		height: 1200,
+		date: new Date('2026-11-25'),
+	},
+	{
 		slug: 'branches',
 		title: 'Branches, merging and cherry-picking',
 		description: 'Create and check out branches, merge and cherry-pick by dragging in the graph, and revert a commit.',
