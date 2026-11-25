@@ -48,8 +48,8 @@ export const tutorials: Tutorial[] = [
 	{
 		slug: 'edit-commit-message',
 		title: "Editing a commit's message",
-		description: "Fix the message of a commit you haven't pushed, even with more commits on top of it: no rebase to step through, and the commits on top keep their changes and authors under new SHA-1s.",
-		seconds: 72,
+		description: "Fix the message of a commit you haven't pushed, even with more commits on top of it, and change its author and committer if you need to: no rebase to step through, and the commits on top keep their changes and authors under new SHA-1s.",
+		seconds: 77,
 		width: 1920,
 		height: 1200,
 		date: new Date('2026-11-25'),
